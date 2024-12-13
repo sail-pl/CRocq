@@ -5,7 +5,6 @@ Set Universe Polymorphism.
 Declare Scope category_scope.
 Open Scope category_scope.
 
-
 (** ** Category *)
 
 (** A _category_ [C] consists of:
@@ -102,7 +101,6 @@ Arguments copair_f {C a b p _}.
 
 Notation "[ F , G ]" := (copair_f _ F G) (at level 0, no associativity).
     
-
 (** ** Cartesian category *)
 (** A cartesian category is a category with a 
     product [a × b] for 
