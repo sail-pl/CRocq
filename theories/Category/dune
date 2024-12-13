@@ -1,0 +1,4 @@
+(coq.theory
+ (name Categories.Category)
+ (package categories)
+ (coqdoc_flags :standard --utf8 --gallina))
