@@ -1,7 +1,5 @@
 From Coq.Logic Require Import FunctionalExtensionality.
-(* From reactive.utils Require Import Notations. *)
 From Categories.Category Require Import Category Functor.
-
 
 Instance TypeCat  : Category.
     refine (
@@ -21,7 +19,7 @@ Instance TypeCat  : Category.
         now apply functional_extensionality.
 Defined.
 
-Lemma empty_initial : @initial TypeCat Empty_set.
+Lemma empty_initial : initial TypeCat Empty_set.
 Proof.
     intro o.
     exists (fun (e : Empty_set) => match e with end).
@@ -30,7 +28,7 @@ Proof.
     destruct x.
 Qed.
 
-Lemma singleton_final : @final TypeCat unit.
+Lemma singleton_terminal : terminal TypeCat unit.
     intro o.
     exists (fun _ => tt).
     intro h.
@@ -38,4 +36,50 @@ Lemma singleton_final : @final TypeCat unit.
     destruct (h x).
     reflexivity.
 Qed.
+
+Open Scope type_scope.
+
+#[refine] Instance prodProduct (a b : Type): 
+    product TypeCat a b (a * b) := 
+    {
+        π₁ := fst;
+        π₂ := snd;
+        pair_f := fun c f g (x : c) => (f x, g x)
+    }.
+Proof.
+    -   intros c f g.
+        split;
+            apply functional_extensionality; reflexivity.
+    -   intros c f g h Ha.
+        destruct Ha as [Ha Hb].
+        rewrite Ha, Hb; simpl.
+        apply functional_extensionality.
+        intro x.
+        rewrite <- surjective_pairing.
+        reflexivity.
+Defined.
+
+#[refine] Instance sumCoproduct (a b : Type): 
+    coproduct TypeCat a b (a + b) := 
+    {
+        ι₁ := inl;
+        ι₂ := inr;
+        copair_f := fun c f g (x : a + b) => 
+            match x with 
+                | inl y => f y 
+                | inr y => g y 
+            end
+    }.
+Proof.
+    -   intros c f g.
+        split;
+            apply functional_extensionality;
+            reflexivity.
+    -   intros c f g h Ha.
+        destruct Ha as [Ha Hb].
+        rewrite Ha, Hb; simpl.
+        apply functional_extensionality.
+        destruct x; reflexivity.
+Defined.
+
 
