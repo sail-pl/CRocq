@@ -17,7 +17,7 @@ Record AlgebraMorphism {C : Category} {F : Functor C C}
     (A B : Algebra F) : Type := 
     {
         f : C (a_u A) (a_u B);
-        H_f : (constr B) ∘ (fmap f) = f ∘ (constr A)
+        H_f : (constr B) ∘ (fmap F f) = f ∘ (constr A)
 }.
 
 Coercion f : AlgebraMorphism >-> hom.

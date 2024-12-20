@@ -12,3 +12,6 @@ Category Theory in Coq
 - ⨉     bigtimes
 - ⟨ ⟩   langle, rangle 
 - ∘     circ
+
+base directory : _build/default/theories/Category
+directory resource at the same level as html pages

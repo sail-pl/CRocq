@@ -1,4 +1,8 @@
 (coq.theory
  (name Categories.Category)
  (package categories)
- (coqdoc_flags :standard --utf8 --gallina))
+ (coqdoc_flags :standard --utf8 --gallina --with-header ../../../../../../coqdocjs/extra/header.html 
+  --with-footer ../../../../../../coqdocjs/extra/footer.html))
+ (copy_files
+ (files ../../coqdocjs/extra/resources/*)
+ (alias doc))
