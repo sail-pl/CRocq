@@ -3,7 +3,7 @@ From Coq.Lists Require Import List.
 From Categories.Category Require Import Category Functor.
 From Categories.Instances Require Import CategoryType.
 
-#[export] Instance FunctorList : Functor CategoryType CategoryType.
+#[export] Instance FunctorList : Functor Typ Typ.
 refine ({|
     fobj := list;
     fmap := List.map
@@ -17,5 +17,3 @@ Proof.
         simpl; rewrite map_map.
         reflexivity.
 Defined.
-
-Check (FunctorList : Cat CategoryType CategoryType).

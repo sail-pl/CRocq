@@ -1,7 +1,7 @@
 From Coq.Logic Require Import FunctionalExtensionality.
 From Categories.Category Require Import Category Functor.
 
-Instance CategoryType  : Category.
+Instance Typ  : Category.
     refine (
         {|
         obj := Type;
@@ -19,7 +19,7 @@ Instance CategoryType  : Category.
         now apply functional_extensionality.
 Defined.
 
-Lemma empty_initial : initial CategoryType Empty_set.
+Lemma empty_initial : initial Typ Empty_set.
 Proof.
     intro o.
     exists (fun (e : Empty_set) => match e with end).
@@ -28,7 +28,7 @@ Proof.
     destruct x.
 Qed.
 
-Lemma singleton_terminal : terminal CategoryType unit.
+Lemma singleton_terminal : terminal Typ unit.
     intro o.
     exists (fun _ => tt).
     intro h.
@@ -40,7 +40,7 @@ Qed.
 Open Scope type_scope.
 
 #[refine] Instance prodProduct (a b : Type): 
-    product CategoryType a b (a * b) := 
+    product Typ a b (a * b) := 
     {
         π₁ := fst;
         π₂ := snd;
@@ -60,7 +60,7 @@ Proof.
 Defined.
 
 #[refine] Instance sumCoproduct (a b : Type): 
-    coproduct CategoryType a b (a + b) := 
+    coproduct Typ a b (a + b) := 
     {
         ι₁ := inl;
         ι₂ := inr;
@@ -82,4 +82,10 @@ Proof.
         destruct x; reflexivity.
 Defined.
 
+(* Category Type Cartesian, Closed *)
+
+Instance CartesianType  : @Cartesian Typ :=
+{
+    product_obj := fun A B => A * B; 
+}.
 

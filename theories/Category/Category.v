@@ -108,7 +108,7 @@ Notation "[ F , G ]" := (copair_f _ F G) (at level 0, no associativity).
 
 Reserved Infix "×" (at level 41, right associativity).
 
-Class CartesianCategory `{C : Category}: Type := {
+Class Cartesian `{C : Category}: Type := {
     product_obj : obj -> obj -> obj
         where "x × y" := (product_obj x y);
     product_obj_spec :: forall o o', product C o o' (o × o') }.
@@ -118,7 +118,7 @@ Infix "×" := product_obj
 
 Generalizable Variables  C.
 
-Definition product_hom `{H : @CartesianCategory C} {a b c d : C} : 
+Definition product_hom `{H : @Cartesian C} {a b c d : C} : 
     C a b -> C c d -> C (a × c) (b × d) :=
         fun (f : C a b) (g : C c d) => ⟨ (f ∘ π₁), (g ∘ π₂) ⟩.
 
@@ -132,7 +132,7 @@ Infix "⨉" := product_hom
         [eval : C ((exp o1 o2) × o1) o2] 
     such that *)
 
-Class CartesianClosedCategory `{@CartesianCategory C} : Type := {
+Class CartesianClosed `{@Cartesian C} : Type := {
     exp : obj -> obj -> obj;
     eval : forall (o1 o2 : C), C ((exp o1 o2) × o1) o2;
     eval_spec : 
