@@ -42,8 +42,13 @@ Infix "∘" := compose (at level 42, left associativity) : category_scope.
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism to all objects of the category. *)
 
-Class initial (C : Category) (a : C) : Prop := (* type class ? *)
-    initial_spec : forall b : C, exists h : C a b, forall h' : C a b, h = h'.
+(* Class initial (C : Category) (a : C) : Prop := (* type class ? *)
+    initial_spec : forall b : C, exists h : C a b, forall h' : C a b, h = h'. *)
+
+Class initial (C : Category) (a : C) : Type := {
+    umorph : forall (b : C), C a b;
+    umorph_prop : forall (b : C) (h' : C a b), h' = umorph b
+}.
 
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism from all objects of the category. *)

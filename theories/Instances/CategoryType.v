@@ -19,14 +19,15 @@ Instance Typ  : Category.
         now apply functional_extensionality.
 Defined.
 
-Lemma empty_initial : initial Typ Empty_set.
+#[refine] Instance empty_initial : initial Typ Empty_set :=
+{
+    umorph := fun b => fun (x : Empty_set) => match x with end 
+}.
 Proof.
-    intro o.
-    exists (fun (e : Empty_set) => match e with end).
-    intro h'.
-    apply functional_extensionality; intro x.
+    intros.
+    apply functional_extensionality.
     destruct x.
-Qed.
+Defined.
 
 Lemma singleton_terminal : terminal Typ unit.
     intro o.
