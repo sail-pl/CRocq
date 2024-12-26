@@ -37,7 +37,7 @@ Instance stream_CoAlgebra ( A : Type ) : CoAlgebra (Fₛ A) :=
 }.
 
 #[refine] Instance T (A : Type) : 
-    initial (CoAlgebraCat (Fₛ A)) (stream_CoAlgebra A) := {}.
+    @initial (CoAlgebraCat (Fₛ A)) (stream_CoAlgebra A) := {}.
 Proof.
     intros.
 Admitted.
