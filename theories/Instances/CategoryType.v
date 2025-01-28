@@ -23,11 +23,12 @@ Defined.
 
 (** Cartesian category *)
 
-#[refine] Instance prodProduct (a b : Type) : product Typ a b (a * b) := 
+#[refine] Instance prodProduct (a b : Type) : product a b := 
     {
+        product_obj := a * b;
         π₁ := fst;
         π₂ := snd;
-        pair_f := fun c f g (x : c) => (f x, g x)
+        product_morph := fun c f g (x : c) => (f x, g x)
     }.
 Proof.
     -   intros c f g.
@@ -42,16 +43,15 @@ Proof.
         reflexivity.
 Defined.
 
-Instance CartesianType  : Cartesian :=
-{
-    product_obj := fun A B => A * B
-}.
+Instance CartesianType  : Cartesian := {}.
+
 
 (** Cartesian Closed Category *)
 
-#[refine] Instance singleton_terminal : terminal Typ unit := 
+#[refine] Instance singleton_terminal : terminal := 
 {
-    vmorph := fun _ _ => tt
+    terminal_obj := unit;
+    terminal_morph := fun _ _ => tt
 }.
 Proof.
     intros h f.
@@ -59,9 +59,12 @@ Proof.
     destruct (f x); reflexivity.
 Defined.
 
-#[refine] Instance ExponentialType : Exponential (hom) := 
+(* exponential_obj *)
+
+#[refine] Instance ExponentialType (a b : obj) : Exponential a b := 
 {
-    eval := fun A B => fun p => (fst p) (snd p)
+    exponential_obj := a -> b;
+    eval := fun p => (fst p) (snd p)
 }.
 Proof.
     intros.
@@ -75,19 +78,17 @@ Proof.
         intro f.
         apply functional_extensionality.
         reflexivity.
-Qed.
+Defined.
 
-#[refine] Instance CartesianClosedType : CartesianClosed :=
-{
-    term := unit;
-    exp := fun A B => A -> B;
-}.
+Instance CartesianClosedType : CartesianClosed := {}.
 
 (** Bicartesian closed category *)
 
-#[refine] Instance empty_initial : initial Typ Empty_set :=
+#[refine] Instance empty_initial : initial :=
 {
-    umorph := fun b => fun (x : Empty_set) => match x with end 
+    initial_obj := Empty_set;
+    initial_morph := 
+        fun b => fun (x : Empty_set) => match x with end 
 }.
 Proof.
     intros.
@@ -95,11 +96,12 @@ Proof.
     destruct x.
 Defined.
 
-#[refine] Instance sumCoproduct (a b : Type) : coproduct Typ a b (a + b) := 
+#[refine] Instance sumCoproduct (a b : Type) : coproduct a b := 
     {
+        co_product_obj := sum a b;
         ι₁ := inl;
         ι₂ := inr;
-        copair_f := fun c f g (x : a + b) => 
+        coproduct_morph := fun c f g (x : a + b) => 
             match x with 
                 | inl y => f y 
                 | inr y => g y 
@@ -108,8 +110,8 @@ Defined.
 Proof.
     -   intros c f g.
         split;
-            apply functional_extensionality;
-            reflexivity.
+        apply functional_extensionality;
+        reflexivity.
     -   intros c f g h Ha.
         destruct Ha as [Ha Hb].
         rewrite Ha, Hb; simpl.
@@ -117,8 +119,4 @@ Proof.
         destruct x; reflexivity.
 Defined.
 
-#[refine] Instance BiCartesianClosedType : BiCartesianClosed :=
-{
-  init := Empty_set;  
-  co_product_obj := sum;
-}.
+Instance BiCartesianClosedType : BiCartesianClosed :={}.

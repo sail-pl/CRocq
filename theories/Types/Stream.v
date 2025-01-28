@@ -36,11 +36,10 @@ Instance stream_CoAlgebra ( A : Type ) : CoAlgebra (Fₛ A) :=
     destr := fun p => match p with str a t => (a,t) end
 }.
 
-#[refine] Instance T (A : Type) : 
-    @initial (CoAlgebraCat (Fₛ A)) (stream_CoAlgebra A) := {}.
+(* #[refine] Instance T (A : Type) : initial. 
 Proof.
     intros.
-Admitted.
+Admitted. *)
 
 Definition hd {A : Type} : stream A -> A := fst ∘ (destr (stream_CoAlgebra A)).
 

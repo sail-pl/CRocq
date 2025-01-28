@@ -37,7 +37,7 @@ Proof.
     -   reflexivity.
 Defined.
 
-#[refine] Instance initial_ : initial (AlgebraCat Fₙ) nat_Algebra := 
+(* #[refine] Instance initial_ : initial (AlgebraCat Fₙ) nat_Algebra := 
 {
     umorph := nat_to_algebra_m
 }.
@@ -58,4 +58,4 @@ Proof.
     unfold nat_to_algebra_m; simpl.
     f_equal.
     apply proof_irrelevance.
-Defined.
+Defined. *)

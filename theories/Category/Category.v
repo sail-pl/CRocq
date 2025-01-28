@@ -5,8 +5,9 @@ Set Universe Polymorphism.
 Declare Scope category_scope.
 Open Scope category_scope.
 
-(** ** Category *)
-
+(*****************************************************************************)
+(** Category object *)
+(*****************************************************************************)
 (** A _category_ [C] consists of:
     -   a type of objects [obj], denoted by [C]
     -   a type of morphisms [hom a b], denoted [C a b], for each pair of objects [a] and [b]
@@ -38,28 +39,46 @@ Coercion hom : Category >-> Funclass.
 
 Infix "∘" := compose (at level 42, left associativity) : category_scope.
 
+
+(*****************************************************************************)
+(** Initial object *)
+(*****************************************************************************)
+
 (** ** Initial and final objects *)
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism to all objects of the category. *)
 
-(* Class initial (C : Category) (a : C) : Prop := (* type class ? *)
-    initial_spec : forall b : C, exists h : C a b, forall h' : C a b, h = h'. *)
-
-Class initial (C : Category) (a : C) : Type := {
-    umorph : forall (b : C), C a b;
-    umorph_prop : forall (b : C) (h' : C a b), h' = umorph b
+Class initial {C : Category} : Type := {
+    initial_obj : C;
+    initial_morph (a : C) : C initial_obj a;
+    initial_morph_spec (a : C) (h' : C initial_obj a) : 
+            h' = initial_morph a
 }.
+
+Coercion initial_obj : initial >-> obj.
+
+(*****************************************************************************)
+(** Terminal object *)
+(*****************************************************************************)
+
+
+Class terminal {C : Category} : Type := 
+{
+    terminal_obj : C;
+    terminal_morph (a : C) : C a terminal_obj;
+    terminal_morph_spec (a : C) (h' : C a terminal_obj) :
+        h' = terminal_morph a
+}.
+
+Coercion terminal_obj : terminal >-> obj.
 
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism from all objects of the category. *)
 
-Class terminal (C : Category) (a : C) : Type := 
-{
-    vmorph : forall (b : C), C b a;
-    vmorph_prop : forall (b : C) (h' : C b a), h' = vmorph b
-}.
 
-(** ** Products and coproducts *)
+(*****************************************************************************)
+(** Product object *)
+(*****************************************************************************)
 
 (** A _product_ of two objects [a] and [b] of a category [C] is an 
     object [p : C] together with two morphisms [π₁ : C p a] and [π₂ : C p b]
@@ -71,19 +90,23 @@ Class terminal (C : Category) (a : C) : Type :=
 
 Reserved Notation "⟨ F , G ⟩" (at level 0, no associativity).
 
-Class product (C : Category) (a b : C) (p : C) := {
-    π₁ : C p a;
-    π₂ : C p b;
-    pair_f (c : C) : C c a -> C c b -> C c p
-        where "⟨ F , G ⟩" := (pair_f _ F G);
+Class product  {C : Category} (a b : C) : Type := {
+    product_obj : C;
+    π₁ : C product_obj a;
+    π₂ : C product_obj b;
+    product_morph (c : C) : C c a -> C c b -> C c product_obj
+        where "⟨ F , G ⟩" := (product_morph _ F G);
     pair_f_spec1 : forall (c : C) (f : C c a) (g : C c b),
             f = π₁ ∘ ⟨ f, g ⟩ /\ g = π₂ ∘ ⟨ f, g ⟩;
-    pair_f_spec2 (c : C) : forall (f : C c a) (g : C c b) (h : C c p),
+    pair_f_spec2 (c : C) : 
+        forall (f : C c a) (g : C c b) (h : C c product_obj),
             f = π₁ ∘ h /\ g = π₂ ∘ h -> h = ⟨ f,  g ⟩ }.
     
-Arguments pair_f {C a b p _}. 
+Arguments product_morph {C a b _}. 
 
-Notation "⟨ F , G ⟩" := (pair_f _ F G) (at level 0, no associativity).
+Coercion product_obj : product >-> obj.
+
+Notation "⟨ F , G ⟩" := (product_morph _ F G) (at level 0, no associativity).
 
 (** A _coproduct_ of two objects [a] and [b] of a category [C] is an 
     object [q : C] together with two morphisms [ι₁ : C a p] and [ι₂ : C b p]
@@ -93,86 +116,93 @@ Notation "⟨ F , G ⟩" := (pair_f _ F G) (at level 0, no associativity).
     - [g = (pair_f c f g) ∘ ι₂].
     *)
 
+(*****************************************************************************)
+(** Product object *)
+(*****************************************************************************)
+
 Reserved Notation "[ F , G ]" (at level 0, no associativity).
 
-Class coproduct (C : Category) (a b : C) (p : C) := {
-    ι₁ : C a p;
-    ι₂ : C b p;
-    copair_f (c : C) : C a c -> C b c -> C p c
-        where "[ F , G ]" := (copair_f _ F G);
-    copair_f_spec1 : forall (c : C) (f : C a c) (g : C b c),
+Class coproduct `{C : Category} (a b : obj) : Type := {
+    co_product_obj : C;
+    ι₁ : C a co_product_obj;
+    ι₂ : C b co_product_obj;
+    coproduct_morph (c : C) : C a c -> C b c -> C co_product_obj c
+        where "[ F , G ]" := (coproduct_morph _ F G);
+    coproduct_morph_spec1 : forall (c : C) (f : C a c) (g : C b c),
             f = [ f, g ] ∘ ι₁ /\ g = [ f, g ] ∘ ι₂;
-    copair_f_spec2 : forall (c : C) (f : C a c) (g : C b c) (h : C p c),
+    coprodict_morph_spec2 : forall (c : C) (f : C a c) (g : C b c) (h : C co_product_obj c),
             f = h ∘ ι₁ /\ g = h ∘ ι₂ -> [ f, g ] = h }.
 
-Arguments copair_f {C a b p _}. 
+Arguments coproduct_morph {C a b _}. 
 
-Notation "[ F , G ]" := (copair_f _ F G) (at level 0, no associativity).
+Notation "[ F , G ]" := (coproduct_morph _ F G) (at level 0, no associativity).
     
+(*****************************************************************************)
+(** Cartesian Category *)
+(*****************************************************************************)
+
 (** ** Cartesian category *)
 (** A cartesian category is a category with a 
     product [a × b] for 
     all all pair of objects [a] and [b] *)
 
-Reserved Infix "×" (at level 41, right associativity).
 
-Class Cartesian `{C : Category}: Type := {
-    product_obj : obj -> obj -> obj
-        where "x × y" := (product_obj x y);
-    product_obj_spec :: forall o o', product C o o' (o × o') }.
+Class Cartesian {C : Category} : Type := {
+    prod : forall (a b : C), product a b 
+}.
 
-Infix "×" := product_obj 
+Infix "⊗" := prod 
     (at level 41, right associativity) : category_scope.
 
-Generalizable Variables  C.
+(*******************************************************************)
+(** Exponential object *)
+(*******************************************************************)
 
-Definition product_hom `{H : @Cartesian C} {a b c d : C} : 
-    C a b -> C c d -> C (a × c) (b × d) :=
-        fun (f : C a b) (g : C c d) => ⟨ (f ∘ π₁), (g ∘ π₂) ⟩.
+Definition product_hom {C : Category} {H : @Cartesian C} : 
+    forall {a b c d : C}, C a b -> C c d -> C (a ⊗ c) (b ⊗ d) :=
+        fun {a b c d : C} (f : C a b) (g : C c d) => ⟨ (f ∘ π₁), (g ∘ π₂) ⟩.
 
-Infix "⨉" := product_hom 
+Infix "⨂" := product_hom 
     (at level 42, left associativity) : category_scope.
 
-(** ** Cartesian Closed Category *)
+(*******************************************************************)
+(** Exponential object *)
+(*******************************************************************)
+
+Class Exponential `{Cartesian} (a b : obj) : Type :=
+{
+    exponential_obj : obj;
+    eval : C (exponential_obj ⊗ a) b;
+    eval_spec : 
+        forall (c : obj) (g : C (c ⊗ a) b),
+            exists! (curry_g : C c exponential_obj),
+                g = eval ∘ (curry_g ⨂ (idty _ ))
+}.
+
+
+(*******************************************************************)
+(** Cartesian Closed Category *)
+(*******************************************************************)
+
 (** A cartesian closed category is a category with an 
     exponential [exp a b] for all all pair of objects 
     [a] and [b] and a morphism 
         [eval : C ((exp o1 o2) × o1) o2] 
     such that *)
 
-Class Exponential `{Cartesian} (exp : obj -> obj -> obj) : Type :=
-{
-    eval : forall (o1 o2 : @obj C), C ((exp o1 o2) × o1) o2;
-    eval_spec : 
-        forall (o1 o2 q : C) (g : C (q × o1) o2),
-            exists! (curry_g : C q (exp o1 o2)),
-                g = eval o1 o2 ∘ (curry_g ⨉ (idty _ ))
-}.
-
-(* term obj + instance or instance *)
 Class CartesianClosed `{Cartesian} : Type := {
-    term : obj;
-    exp : obj -> obj -> obj;
-    term_spec : terminal C term;
-    exp_spec : Exponential exp;
+    term : terminal ;
+    exp : forall a b, Exponential a b
 }.
 
-(* Class CartesianClosed `{Cartesian} : Type := {
-    term : obj;
-    exp : obj -> obj -> obj;
-    eval : forall (o1 o2 : @obj C), C ((exp o1 o2) × o1) o2;
-    term_spec : terminal C term;
-    eval_spec : 
-        forall (o1 o2 q : C) (g : C (q × o1) o2),
-            exists! (curry_g : C q (exp o1 o2)),
-                g = eval o1 o2 ∘ (curry_g ⨉ (idty _ ))
-}. *)
+(*******************************************************************)
+(** BiCartesian Closed Category *)
+(*******************************************************************)
 
 Class BiCartesianClosed `{CartesianClosed} : Type := {
-    init : obj;
-    co_product_obj : obj -> obj -> obj
-        where "x + y" := (co_product_obj x y);
-    fin_spec : initial C init;
-    co_product_obj_spec : forall o o', coproduct C o o' (o+o')
-
+    init : initial;
+    coprod : forall a b, coproduct a b
 }.
+
+Infix "⊕" := coprod 
+    (at level 41, right associativity) : category_scope.
