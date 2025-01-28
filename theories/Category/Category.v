@@ -6,7 +6,7 @@ Declare Scope category_scope.
 Open Scope category_scope.
 
 (*****************************************************************************)
-(** Category object *)
+(** ** Category object *)
 (*****************************************************************************)
 (** A _category_ [C] consists of:
     -   a type of objects [obj], denoted by [C]
@@ -41,10 +41,8 @@ Infix "∘" := compose (at level 42, left associativity) : category_scope.
 
 
 (*****************************************************************************)
-(** Initial object *)
+(** ** Initial object *)
 (*****************************************************************************)
-
-(** ** Initial and final objects *)
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism to all objects of the category. *)
 
@@ -58,9 +56,10 @@ Class initial {C : Category} : Type := {
 Coercion initial_obj : initial >-> obj.
 
 (*****************************************************************************)
-(** Terminal object *)
+(** ** Terminal object *)
 (*****************************************************************************)
-
+(** A _terminal object_ of a category [C] is a an object [a] with 
+    a unique morphism from all objects of the category. *)
 
 Class terminal {C : Category} : Type := 
 {
@@ -72,18 +71,13 @@ Class terminal {C : Category} : Type :=
 
 Coercion terminal_obj : terminal >-> obj.
 
-(** An _initial object_ of a category [C] is a an object [a] with 
-    a unique morphism from all objects of the category. *)
-
-
 (*****************************************************************************)
-(** Product object *)
+(** ** Product object *)
 (*****************************************************************************)
-
-(** A _product_ of two objects [a] and [b] of a category [C] is an 
-    object [p : C] together with two morphisms [π₁ : C p a] and [π₂ : C p b]
-    such that for all object [c] with morphisms [f : C c a] and [g : C c b]
-    we have a unique [⟨ f, g ⟩ : C c p] such that 
+(** Given two objects [a] and [b] of a category [C], 
+    an object [c] is a _product_ of [a] and [b] if there exists two morphisms
+    [π₁ : C c a] and [π₂ : C c b] such that for all object [x] with morphisms 
+    [f : C x a] and [g : C x b] we have a unique [⟨ f, g ⟩ : C c x] such that 
         - [f = π₁ ∘ ⟨ f, g ⟩]
         - [g = π₂ ∘ ⟨ f, g ⟩]
     *)
@@ -94,7 +88,7 @@ Class product  {C : Category} (a b : C) : Type := {
     product_obj : C;
     π₁ : C product_obj a;
     π₂ : C product_obj b;
-    product_morph (c : C) : C c a -> C c b -> C c product_obj
+    product_morph (x : C) : C x a -> C x b -> C x product_obj
         where "⟨ F , G ⟩" := (product_morph _ F G);
     pair_f_spec1 : forall (c : C) (f : C c a) (g : C c b),
             f = π₁ ∘ ⟨ f, g ⟩ /\ g = π₂ ∘ ⟨ f, g ⟩;
@@ -108,17 +102,16 @@ Coercion product_obj : product >-> obj.
 
 Notation "⟨ F , G ⟩" := (product_morph _ F G) (at level 0, no associativity).
 
-(** A _coproduct_ of two objects [a] and [b] of a category [C] is an 
-    object [q : C] together with two morphisms [ι₁ : C a p] and [ι₂ : C b p]
-    such that for all object [c] with morphisms [f : C a c] and [g : C b c]
-    there exists a unique [h : C p c] such that 
-    - [f = copair_f c f g ∘ ι₁]
-    - [g = (pair_f c f g) ∘ ι₂].
+(*****************************************************************************)
+(** ** Coproduct object *)
+(*****************************************************************************)
+(** Given two objects [a] and [b] of a category [C], 
+    an object [c] is a _coproduct_ of [a] and [b] if there exists two morphisms
+    [ι₁ : C a c] and [ι₂ : C b c] such that for all object [x] with morphisms 
+    [f : C a x] and [g : C b x] we have a unique [⟨ f, g ⟩ : C x c] such that 
+        - [f = [f, g] ∘ ι₁]
+        - [g = [f, g] ∘ ι₂].
     *)
-
-(*****************************************************************************)
-(** Product object *)
-(*****************************************************************************)
 
 Reserved Notation "[ F , G ]" (at level 0, no associativity).
 
@@ -130,7 +123,8 @@ Class coproduct `{C : Category} (a b : obj) : Type := {
         where "[ F , G ]" := (coproduct_morph _ F G);
     coproduct_morph_spec1 : forall (c : C) (f : C a c) (g : C b c),
             f = [ f, g ] ∘ ι₁ /\ g = [ f, g ] ∘ ι₂;
-    coprodict_morph_spec2 : forall (c : C) (f : C a c) (g : C b c) (h : C co_product_obj c),
+    coprodict_morph_spec2 : forall (c : C) (f : C a c) (g : C b c) 
+        (h : C co_product_obj c),
             f = h ∘ ι₁ /\ g = h ∘ ι₂ -> [ f, g ] = h }.
 
 Arguments coproduct_morph {C a b _}. 
@@ -138,14 +132,10 @@ Arguments coproduct_morph {C a b _}.
 Notation "[ F , G ]" := (coproduct_morph _ F G) (at level 0, no associativity).
     
 (*****************************************************************************)
-(** Cartesian Category *)
+(** ** Cartesian Category *)
 (*****************************************************************************)
-
-(** ** Cartesian category *)
 (** A cartesian category is a category with a 
-    product [a × b] for 
-    all all pair of objects [a] and [b] *)
-
+    product [a ⊗ b] for all all pair of objects [a] and [b] *)
 
 Class Cartesian {C : Category} : Type := {
     prod : forall (a b : C), product a b 
@@ -153,10 +143,6 @@ Class Cartesian {C : Category} : Type := {
 
 Infix "⊗" := prod 
     (at level 41, right associativity) : category_scope.
-
-(*******************************************************************)
-(** Exponential object *)
-(*******************************************************************)
 
 Definition product_hom {C : Category} {H : @Cartesian C} : 
     forall {a b c d : C}, C a b -> C c d -> C (a ⊗ c) (b ⊗ d) :=
@@ -166,8 +152,12 @@ Infix "⨂" := product_hom
     (at level 42, left associativity) : category_scope.
 
 (*******************************************************************)
-(** Exponential object *)
+(** ** Exponential *)
 (*******************************************************************)
+(** Given two objects [a] and [b] of a category [C], an object [c] 
+    is an exponential of [a] and [b] if there exists 
+    a morphism [eval : C (c ⊗ a) b] such that ... 
+    *)
 
 Class Exponential `{Cartesian} (a b : obj) : Type :=
 {
@@ -181,14 +171,11 @@ Class Exponential `{Cartesian} (a b : obj) : Type :=
 
 
 (*******************************************************************)
-(** Cartesian Closed Category *)
+(** ** Cartesian Closed Category *)
 (*******************************************************************)
-
-(** A cartesian closed category is a category with an 
-    exponential [exp a b] for all all pair of objects 
-    [a] and [b] and a morphism 
-        [eval : C ((exp o1 o2) × o1) o2] 
-    such that *)
+(** A cartesian closed category is a category with a terminal object
+    and an exponential [exp a b] for all all pair of objects 
+    [a] and [b] *)
 
 Class CartesianClosed `{Cartesian} : Type := {
     term : terminal ;
@@ -196,8 +183,11 @@ Class CartesianClosed `{Cartesian} : Type := {
 }.
 
 (*******************************************************************)
-(** BiCartesian Closed Category *)
+(** ** BiCartesian Closed Category *)
 (*******************************************************************)
+(** A bicartesian closed category is a cartesian closed category
+    with a initial object and a coproduct [a ⊕ b] for all objects [a]
+    and [b] *)
 
 Class BiCartesianClosed `{CartesianClosed} : Type := {
     init : initial;
