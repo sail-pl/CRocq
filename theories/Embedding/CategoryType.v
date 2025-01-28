@@ -1,3 +1,4 @@
+
 From Coq.Logic Require Import FunctionalExtensionality.
 From Categories.Category Require Import Category Functor.
 
@@ -64,7 +65,7 @@ Defined.
 #[refine] Instance ExponentialType (a b : obj) : Exponential a b := 
 {
     exponential_obj := a -> b;
-    eval := fun p => (fst p) (snd p)
+    exponential_morph := fun p => (fst p) (snd p)
 }.
 Proof.
     intros.
@@ -121,8 +122,6 @@ Defined.
 
 Instance BiCartesianClosedType : BiCartesianClosed :={}.
 
-
-(** Unit *)
 
 #[refine] Instance FunctorConstant (A : Type) : Functor Typ Typ :=
 {

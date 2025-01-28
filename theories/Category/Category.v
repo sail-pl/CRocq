@@ -3,6 +3,7 @@ From Coq.Logic Require Import FunctionalExtensionality.
 Set Universe Polymorphism.
 
 Declare Scope category_scope.
+
 Open Scope category_scope.
 
 (*****************************************************************************)
@@ -38,7 +39,6 @@ Coercion obj : Category >-> Sortclass.
 Coercion hom : Category >-> Funclass.
 
 Infix "∘" := compose (at level 42, left associativity) : category_scope.
-
 
 (*****************************************************************************)
 (** ** Initial object *)
@@ -90,9 +90,9 @@ Class product  {C : Category} (a b : C) : Type := {
     π₂ : C product_obj b;
     product_morph (x : C) : C x a -> C x b -> C x product_obj
         where "⟨ F , G ⟩" := (product_morph _ F G);
-    pair_f_spec1 : forall (c : C) (f : C c a) (g : C c b),
+    product_morph_spec1 : forall (c : C) (f : C c a) (g : C c b),
             f = π₁ ∘ ⟨ f, g ⟩ /\ g = π₂ ∘ ⟨ f, g ⟩;
-    pair_f_spec2 (c : C) : 
+    product_morph_spec2 (c : C) : 
         forall (f : C c a) (g : C c b) (h : C c product_obj),
             f = π₁ ∘ h /\ g = π₂ ∘ h -> h = ⟨ f,  g ⟩ }.
     
@@ -162,13 +162,12 @@ Infix "⨂" := product_hom
 Class Exponential `{Cartesian} (a b : obj) : Type :=
 {
     exponential_obj : obj;
-    eval : C (exponential_obj ⊗ a) b;
-    eval_spec : 
+    exponential_morph : C (exponential_obj ⊗ a) b;
+    exponential_morph_spec : 
         forall (c : obj) (g : C (c ⊗ a) b),
             exists! (curry_g : C c exponential_obj),
-                g = eval ∘ (curry_g ⨂ (idty _ ))
+                g = exponential_morph ∘ (curry_g ⨂ (idty _ ))
 }.
-
 
 (*******************************************************************)
 (** ** Cartesian Closed Category *)
