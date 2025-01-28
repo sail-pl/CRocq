@@ -53,8 +53,11 @@ Class initial (C : Category) (a : C) : Type := {
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism from all objects of the category. *)
 
-Class terminal (C : Category) (a : C) : Prop := 
-    final_spec : forall b : C, exists h : C b a, forall h' : C b a, h = h'. 
+Class terminal (C : Category) (a : C) : Type := 
+{
+    vmorph : forall (b : C), C b a;
+    vmorph_prop : forall (b : C) (h' : C b a), h' = vmorph b
+}.
 
 (** ** Products and coproducts *)
 
@@ -137,11 +140,39 @@ Infix "⨉" := product_hom
         [eval : C ((exp o1 o2) × o1) o2] 
     such that *)
 
-Class CartesianClosed `{@Cartesian C} : Type := {
-    exp : obj -> obj -> obj;
-    eval : forall (o1 o2 : C), C ((exp o1 o2) × o1) o2;
+Class Exponential `{Cartesian} (exp : obj -> obj -> obj) : Type :=
+{
+    eval : forall (o1 o2 : @obj C), C ((exp o1 o2) × o1) o2;
     eval_spec : 
         forall (o1 o2 q : C) (g : C (q × o1) o2),
             exists! (curry_g : C q (exp o1 o2)),
                 g = eval o1 o2 ∘ (curry_g ⨉ (idty _ ))
+}.
+
+(* term obj + instance or instance *)
+Class CartesianClosed `{Cartesian} : Type := {
+    term : obj;
+    exp : obj -> obj -> obj;
+    term_spec : terminal C term;
+    exp_spec : Exponential exp;
+}.
+
+(* Class CartesianClosed `{Cartesian} : Type := {
+    term : obj;
+    exp : obj -> obj -> obj;
+    eval : forall (o1 o2 : @obj C), C ((exp o1 o2) × o1) o2;
+    term_spec : terminal C term;
+    eval_spec : 
+        forall (o1 o2 q : C) (g : C (q × o1) o2),
+            exists! (curry_g : C q (exp o1 o2)),
+                g = eval o1 o2 ∘ (curry_g ⨉ (idty _ ))
+}. *)
+
+Class BiCartesianClosed `{CartesianClosed} : Type := {
+    init : obj;
+    co_product_obj : obj -> obj -> obj
+        where "x + y" := (co_product_obj x y);
+    fin_spec : initial C init;
+    co_product_obj_spec : forall o o', coproduct C o o' (o+o')
+
 }.

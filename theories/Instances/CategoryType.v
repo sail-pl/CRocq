@@ -1,47 +1,29 @@
 From Coq.Logic Require Import FunctionalExtensionality.
 From Categories.Category Require Import Category Functor.
 
-Instance Typ  : Category.
-    refine (
-        {|
+Open Scope type_scope.
+
+(** Category *)
+
+#[refine] Instance Typ  : Category :=
+    {
         obj := Type;
         hom := fun A B => A -> B;
         idty := fun (A : Type) (x : A) => x;
         compose := fun (A B C : Type) (g : B -> C) (f : A -> B) x => g (f x)  
-        |}
-    ).
-    Proof.
-    -   intros.
-        now apply functional_extensionality.
-    -   intros.
-        now apply functional_extensionality.
-    -   intros.
-        now apply functional_extensionality.
-Defined.
-
-#[refine] Instance empty_initial : initial Typ Empty_set :=
-{
-    umorph := fun b => fun (x : Empty_set) => match x with end 
-}.
+    }.
 Proof.
-    intros.
-    apply functional_extensionality.
-    destruct x.
+    -   intros.
+        now apply functional_extensionality.
+    -   intros.
+        now apply functional_extensionality.
+    -   intros.
+        now apply functional_extensionality.
 Defined.
 
-Lemma singleton_terminal : terminal Typ unit.
-    intro o.
-    exists (fun _ => tt).
-    intro h.
-    apply functional_extensionality; intro x.
-    destruct (h x).
-    reflexivity.
-Qed.
+(** Cartesian category *)
 
-Open Scope type_scope.
-
-#[refine] Instance prodProduct (a b : Type): 
-    product Typ a b (a * b) := 
+#[refine] Instance prodProduct (a b : Type) : product Typ a b (a * b) := 
     {
         π₁ := fst;
         π₂ := snd;
@@ -60,8 +42,60 @@ Proof.
         reflexivity.
 Defined.
 
-#[refine] Instance sumCoproduct (a b : Type): 
-    coproduct Typ a b (a + b) := 
+Instance CartesianType  : Cartesian :=
+{
+    product_obj := fun A B => A * B
+}.
+
+(** Cartesian Closed Category *)
+
+#[refine] Instance singleton_terminal : terminal Typ unit := 
+{
+    vmorph := fun _ _ => tt
+}.
+Proof.
+    intros h f.
+    apply functional_extensionality; intro x.
+    destruct (f x); reflexivity.
+Defined.
+
+#[refine] Instance ExponentialType : Exponential (hom) := 
+{
+    eval := fun A B => fun p => (fst p) (snd p)
+}.
+Proof.
+    intros.
+    exists (fun f => fun x => g (f,x)).
+    split.
+    +   apply functional_extensionality; simpl.
+        destruct x; reflexivity.
+    +   intros.
+        rewrite H; simpl.
+        apply functional_extensionality.
+        intro f.
+        apply functional_extensionality.
+        reflexivity.
+Qed.
+
+#[refine] Instance CartesianClosedType : CartesianClosed :=
+{
+    term := unit;
+    exp := fun A B => A -> B;
+}.
+
+(** Bicartesian closed category *)
+
+#[refine] Instance empty_initial : initial Typ Empty_set :=
+{
+    umorph := fun b => fun (x : Empty_set) => match x with end 
+}.
+Proof.
+    intros.
+    apply functional_extensionality.
+    destruct x.
+Defined.
+
+#[refine] Instance sumCoproduct (a b : Type) : coproduct Typ a b (a + b) := 
     {
         ι₁ := inl;
         ι₂ := inr;
@@ -83,10 +117,8 @@ Proof.
         destruct x; reflexivity.
 Defined.
 
-(* Category Type Cartesian, Closed *)
-
-Instance CartesianType  : @Cartesian Typ :=
+#[refine] Instance BiCartesianClosedType : BiCartesianClosed :=
 {
-    product_obj := fun A B => A * B; 
+  init := Empty_set;  
+  co_product_obj := sum;
 }.
-
