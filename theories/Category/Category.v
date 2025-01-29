@@ -218,10 +218,12 @@ Class monic {C : Category} (a b : C): Type :=
         monic_morph ∘ f1 = monic_morph ∘ f2 -> f1 = f2
 }.
 
-Class crelation {C : Category} {H : @Cartesian C} (a b : C) : Type := 
+Coercion monic_morph : monic >-> hom.
+
+Class crelation {C : Category} {H : @Cartesian C} (a b c : C) : Type := 
 {
-    crelation_obj : C;
-    crelation_morph : monic crelation_obj (a ⊗ b)
+    (* crelation_obj : C; *)
+    crelation_morph : monic c (a ⊗ b)
 }.
 
 (* Relation *)
