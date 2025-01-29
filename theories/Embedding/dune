@@ -1,5 +1,5 @@
 (coq.theory
- (name Categories.Instances)
+ (name Categories.Embedding)
  (package categories)
  (theories Categories.Category Categories.Algebra)
  (coqdoc_flags :standard --utf8 --gallina))

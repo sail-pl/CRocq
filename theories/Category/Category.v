@@ -137,7 +137,7 @@ Notation "[ F , G ]" := (coproduct_morph _ F G) (at level 0, no associativity).
 (** A cartesian category is a category with a 
     product [a ⊗ b] for all all pair of objects [a] and [b] *)
 
-Class Cartesian {C : Category} : Type := {
+Class Cartesian (C : Category) : Type := {
     prod : forall (a b : C), product a b 
 }.
 
@@ -159,12 +159,12 @@ Infix "⨂" := product_hom
     a morphism [eval : C (c ⊗ a) b] such that ... 
     *)
 
-Class Exponential `{Cartesian} (a b : obj) : Type :=
+Class Exponential {C : Category} {H : Cartesian C} (a b : C) : Type :=
 {
-    exponential_obj : obj;
+    exponential_obj : C;
     exponential_morph : C (exponential_obj ⊗ a) b;
     exponential_morph_spec : 
-        forall (c : obj) (g : C (c ⊗ a) b),
+        forall (c : C) (g : C (c ⊗ a) b),
             exists! (curry_g : C c exponential_obj),
                 g = exponential_morph ∘ (curry_g ⨂ (idty _ ))
 }.
@@ -176,10 +176,16 @@ Class Exponential `{Cartesian} (a b : obj) : Type :=
     and an exponential [exp a b] for all all pair of objects 
     [a] and [b] *)
 
-Class CartesianClosed `{Cartesian} : Type := {
+Class CartesianClosed (C:Category) : Type := {
+    CartesianClosed_Cartesian :: Cartesian C;
     term : terminal ;
     exp : forall a b, Exponential a b
 }.
+
+(* Class CartesianClosed (C:Category) {H :@Cartesian C} : Type := {
+    term : terminal ;
+    exp : forall a b, Exponential a b
+}. *)
 
 (*******************************************************************)
 (** ** BiCartesian Closed Category *)
@@ -188,10 +194,35 @@ Class CartesianClosed `{Cartesian} : Type := {
     with a initial object and a coproduct [a ⊕ b] for all objects [a]
     and [b] *)
 
-Class BiCartesianClosed `{CartesianClosed} : Type := {
+Class BiCartesianClosed (C : Category) : Type := {
+    BiCartesianClosed_CartesianClosed :: CartesianClosed C;
     init : initial;
     coprod : forall a b, coproduct a b
 }.
 
 Infix "⊕" := coprod 
     (at level 41, right associativity) : category_scope.
+
+
+Class epic {C : Category} (a b : C): Type := 
+{
+    epic_morph : C a b;
+    epic_spec : forall (c : C) (f1 f2 : C b c),
+        f1 ∘ epic_morph = f2 ∘ epic_morph -> f1 = f2
+}.
+
+Class monic {C : Category} (a b : C): Type := 
+{
+    monic_morph : C a b;
+    monic_spec : forall (c : C) (f1 f2 : C c a),
+        monic_morph ∘ f1 = monic_morph ∘ f2 -> f1 = f2
+}.
+
+Class crelation {C : Category} {H : @Cartesian C} (a b : C) : Type := 
+{
+    crelation_obj : C;
+    crelation_morph : monic crelation_obj (a ⊗ b)
+}.
+
+(* Relation *)
+(* monic relation_obj -> X, Y*)

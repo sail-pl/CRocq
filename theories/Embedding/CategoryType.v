@@ -44,7 +44,7 @@ Proof.
         reflexivity.
 Defined.
 
-Instance CartesianType  : Cartesian := {}.
+Instance CartesianType  : Cartesian Typ := {}.
 
 
 (** Cartesian Closed Category *)
@@ -81,7 +81,7 @@ Proof.
         reflexivity.
 Defined.
 
-Instance CartesianClosedType : CartesianClosed := {}.
+Instance CartesianClosedType : CartesianClosed Typ := {}.
 
 (** Bicartesian closed category *)
 
@@ -120,7 +120,7 @@ Proof.
         destruct x; reflexivity.
 Defined.
 
-Instance BiCartesianClosedType : BiCartesianClosed :={}.
+Instance BiCartesianClosedType : BiCartesianClosed Typ :={}.
 
 
 #[refine] Instance FunctorConstant (A : Type) : Functor Typ Typ :=
