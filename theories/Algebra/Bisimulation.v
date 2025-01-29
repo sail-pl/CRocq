@@ -6,12 +6,12 @@ From Categories.Algebra Require Import Coalgebra CategoryCoAlgebra.
 Class bisimulation {C : Category} {H : Cartesian C} {F : Functor C C} (A B : CoAlgebra F): Type := 
 {
     R : CoAlgebra F;
-    r : crelation (coalgebra_obj A) (coalgebra_obj B) (coalgebra_obj R);
+    f : monic (coalgebra_obj R) ((coalgebra_obj A) ⊗ (coalgebra_obj B));
     proj1_spec : 
-        (coalgebra_morph A) ∘ (π₁ ∘ crelation_morph) 
-            = (fmap F (π₁ ∘ crelation_morph)) ∘ (coalgebra_morph R);
-    proj2_spec : (coalgebra_morph B) ∘ (π₂ ∘ crelation_morph) 
-        = (fmap F (π₂ ∘ crelation_morph)) ∘ (coalgebra_morph R) 
+        (coalgebra_morph A) ∘ (π₁ ∘ f) 
+            = (fmap F (π₁ ∘ f)) ∘ (coalgebra_morph R);
+    proj2_spec : (coalgebra_morph B) ∘ (π₂ ∘ f) 
+        = (fmap F (π₂ ∘ f)) ∘ (coalgebra_morph R) 
 }.
 
 
