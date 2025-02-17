@@ -169,6 +169,7 @@ Class Exponential {C : Category} {H : Cartesian C} (a b : C) : Type :=
                 g = exponential_morph ∘ (curry_g ⨂ (idty _ ))
 }.
 
+Coercion exponential_obj : Exponential >-> obj.
 (*******************************************************************)
 (** ** Cartesian Closed Category *)
 (*******************************************************************)
