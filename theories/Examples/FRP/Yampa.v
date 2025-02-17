@@ -93,9 +93,4 @@ Module Yampa (Import W : WithCategory).
         | Loop c f => loop c (sem f)
         end.
 
-
-
-
-
 End Yampa.
-(* Inductive SF (A B : Set) := *)
