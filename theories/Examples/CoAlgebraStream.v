@@ -13,22 +13,10 @@ Declare Scope stream_scope.
 Open Scope stream_scope.
 Open Scope type_scope.
 
-
-(* Definition bisim (A : Type) (p : stream A * stream A) : Prop :=
-    bisimilar _ (fst p) (snd p). *)
-
-(* Definition q (A : Type) := sigT (bisim A). *)
-
-(* coalgebra F *)
-
 Lemma eq_hd : forall {A : Type} (a : A) s, hd (a ⋅ s) = a.
 Admitted.
 Lemma eq_tl : forall {A : Type} (a : A) s, tl (a ⋅ s) = s.
 Admitted.
-
-(* A generaliser pour un foncteur quelconque *)
-
-
 
 Section Bisim.
 
