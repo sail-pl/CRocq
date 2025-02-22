@@ -4,15 +4,16 @@ Require Import Categories.Category.Category.
 Require Import Categories.Category.Functor.
 Require Import Categories.Embedding.CategoryType.
 Require Import Categories.Category.CategoryCat.
+Require Import Categories.Embedding.Arrow.
 
-Module Type WithCategory.
+(* Module Type WithCategory.
 
     Declare Instance C : Category.
     Declare Instance CC : CartesianClosed C.
 
-End WithCategory.
+End WithCategory. *)
 
-Module Yampa (Import W : WithCategory).
+Module Yampa.
 
     CoInductive sf (A B : Type) := 
         sf_ : (A -> B * sf A B) -> sf A B.
@@ -162,18 +163,20 @@ Module Yampa (Import W : WithCategory).
         intros R H p p0 H0.
         destruct p, p0.
         constructor.
-        -   now apply bisim_hd with (R := R).
-        -   apply CH with (R := R).
-            assumption.
-            now apply bisim_tl.
-
-        constructor; intros.
-        -   now apply bisim_hd with (R := R).
-        -   apply CH with (R := R).
+        -   intro.
+            now apply bisim_hd with (R := R).
+        -   intro.
+            apply CH with (R := R).
             assumption.
             now apply bisim_tl.
     Qed.
        
+
+End bisimulation.
+
+Section arrows.
+
+    Parameters A B C D : Set.
 
     Inductive R1 : relation (sf A B) :=
         R1_ : forall f, R1 (comp (arr (fun x => x)) f) f.
@@ -228,8 +231,11 @@ Qed.
             assumption.
     Qed.
 
-    Lemma bisim_eq1 : forall  (f : sf A B),
-        comp (arr (fun x => x)) f ∼ f.
+    Open Scope category_scope.
+
+    Lemma bisim_eq1 : 
+        forall  (sf : sf A B),
+            comp (arr (fun x => x)) sf ∼ sf.
     Proof.
         intros.
         apply bisimulation_gfp with (R := R1).
@@ -237,6 +243,70 @@ Qed.
         apply R1_.
     Qed.
 
-    End bisimulation.
+    Lemma bisim_eq2 : forall (sf : sf A B),
+        comp sf (arr (fun x => x)) ∼ sf.
+    Admitted.
+
+    Lemma bisim_eq3 : 
+        forall (sf1 : sf A B) (sf2 : sf B C) (sf3 : sf C D),
+            comp (comp sf1 sf2) sf3 ∼ comp sf1 (comp sf2 sf3).
+    Admitted.
+
+    Lemma bisim_eq4 : 
+        forall (f : A -> B) (g : B -> C),
+            arr (fun x => g (f x)) ∼ comp (arr f) (arr g).
+    Admitted.
+
+    Lemma bisim_eq5 :
+        forall (sf : sf A B),
+            comp (@first _ _ C sf) (arr (fun '(x,y) => x)) ∼ 
+                comp (arr (fun '(x,y) => x)) sf.
+    Admitted.
+
+    Lemma bisim_eq6 : 
+        forall (sf : sf A B) (f : A -> B),
+            comp (first sf) (arr (fun '(x,y) => (x, f y))) ∼
+                comp (arr (fun '(x,y) => (x,f y))) (first sf).
+    Admitted.
+
+    Definition assoc {A B C : Set} : (A * B) * C -> A * (B * C) :=
+        fun '((a,b),c) => (a,(b,c)).
+
+    Definition unassoc {A B C : Set} : A * (B * C) -> (A * B) * C :=
+        fun '(a,(b,c)) => ((a,b),c).
+
+    Lemma bisim_eq7 : 
+        forall (sf : sf A B),
+        comp (@first _ _ D (@first _ _ C sf)) (arr assoc) ∼ 
+            comp (arr assoc) (first sf).
+    Admitted.
+    
+    Lemma bisim_eq8 : 
+        forall (f : A -> B),
+            @first _ _ C (arr f) ∼ arr (fun '(x,y) => (f x, y)).
+        Admitted.
+
+    Lemma bisim_eq9 :
+        forall (sf1 : sf A B) (sf2 : sf B C),
+         @first _ _ C (comp sf1 sf2) ∼ comp (first sf1) (first sf2).
+    Admitted.
+
+    Lemma bisim_eq10 :
+        forall (c : D) (sf1 : sf A B) (sf2 : sf (B * D) (C * D)),
+            loop c (comp (first sf1) sf2) ∼ @comp _ _ C sf1 (loop c sf2).
+    Admitted.
+
+    Lemma bisim_eq11 :
+        forall (c : D) (sf1 : sf (A * D) (B * D)) (sf2 : sf B C),
+            loop c (comp sf1 (first sf2)) ∼ comp (loop c sf1) sf2.
+    Admitted.
+
+    Lemma bisim_eq12 :
+        forall (sf : sf ((A * C) * D) ((B * C) * D)) (c : C) (d : D), 
+        loop c (loop d sf) ∼ 
+            loop (c,d) (comp (arr unassoc) (comp sf (arr assoc))).
+    Admitted.
+
+End arrows.
 
 End Yampa.
