@@ -1,24 +1,52 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 From Coq.Setoids Require Import Setoid.
+From Coq Require Import ProofIrrelevance.
 Require Import Categories.Category.Category.
 Require Import Categories.Category.Functor.
 Require Import Categories.Embedding.CategoryType.
 Require Import Categories.Category.CategoryCat.
 Require Import Categories.Embedding.Arrow.
 
-(* Module Type WithCategory.
+(*****************************************************************************)
+(** * Prelude *)
+(*****************************************************************************)
 
-    Declare Instance C : Category.
-    Declare Instance CC : CartesianClosed C.
 
-End WithCategory. *)
+Lemma UIP_refl : 
+  forall (a : Type) (x0 : a = a), (@eq (@eq Type a a) x0 (@eq_refl Type a)).
+Proof. intros; apply UIP. Qed.
 
-Module Yampa.
+Ltac projT2_ H := 
+  rewrite eq_sigT_uncurried_iff in H;
+  simpl in H;
+  let a := fresh "Heq" in
+  inversion H as [HeqT a]; clear H;
+  unfold eq_rect in a;
+  rewrite (UIP_refl _ HeqT) in a;
+  clear HeqT.
+
+Ltac double_projT2_ H := 
+  rewrite eq_sigT_uncurried_iff in H;
+  simpl in H;
+  let a := fresh "Heq" in
+  inversion H as [HeqT Htmp]; clear H;
+  unfold eq_rect in Htmp;
+  rewrite (UIP_refl _ HeqT) in Htmp;
+  rewrite eq_sigT_uncurried_iff in Htmp;
+  simpl in *;
+  inversion Htmp as [HeqT' a]; clear Htmp;
+  unfold eq_rect in a;
+  rewrite (UIP_refl _ HeqT') in a;
+  clear HeqT HeqT'.
+
+Section YampaSemantics.
 
     CoInductive sf (A B : Type) := 
         sf_ : (A -> B * sf A B) -> sf A B.
 
     Arguments sf_ [A B] _.
+
+    (* Yampa defines a functor *)
 
     Definition F (A B : Typ) : Type := B * sf A B.
 
@@ -38,8 +66,8 @@ Module Yampa.
     }.
     Admitted.
 
-    Definition t (A B : Set) := A -> F A B.
 
+    (* Yampa defines a category *)
     CoFixpoint id (A : Typ) : sf A A :=
     sf_ (fun a => (a, id A)).
 
@@ -59,8 +87,7 @@ Module Yampa.
             }.
             Admitted.
         
-
-    (* arrow *)
+    (* Yampa defines an arrow *)
 
     CoFixpoint arr {A B : Typ} (f : A -> B) : sf A B :=
         sf_ (fun a => (f a, arr f)).
@@ -78,26 +105,13 @@ Module Yampa.
             let '((b,c'), f') := f (a, c) in
             (b, loop c' f')
             end).
-    
+        
+End YampaSemantics.
+
+Arguments sf_ [A B] _.
 
 
-    (* map id -> id *)
-
-
-
-    Inductive SF : Type -> Type -> Type :=
-    | Arr : forall {A B : Set}, (A -> B) -> SF A B
-    | Comp : forall {A B C : Set}, SF A B -> SF B C -> SF A C
-    | First : forall {A B C : Set}, SF A B -> SF (A * C) (B * C)
-    | Loop : forall {A B C : Set}, C -> SF (A * C) (B * C) -> SF A B.
-
-    Fixpoint sem {A B : Typ} (f : SF A B) : sf A B :=
-        match f with
-        | Arr h => arr h
-        | Comp f1 f2 => comp (sem f1) (sem f2)
-        | First f => first (sem f)
-        | Loop c f => loop c (sem f)
-        end.
+Section YampaBisimulation.
 
     CoInductive bisimilar : forall {A B : Typ}, sf A B -> sf A B -> Prop :=
     | bisimilar_sf : forall {A B : Typ} (f g : A -> B * sf A B),
@@ -106,46 +120,60 @@ Module Yampa.
         bisimilar (sf_ f) (sf_ g).
 
     Lemma bisimilar_refl : forall {A B : Typ} (f : sf A B), bisimilar f f.
-    Admitted.
+    Proof.
+        cofix Ha.
+        intros.
+        destruct f.
+        constructor.
+    -   reflexivity.
+    -   intro a.
+        exact (Ha _ _ (snd (p a))).
+    Qed.
 
     Lemma bisimilar_sym : forall {A B : Typ} (f g : sf A B), bisimilar f g -> bisimilar g f.
-    Admitted.
+    Proof.
+        cofix Ha.
+        intros.
+        destruct H.
+        constructor.
+        -   symmetry.
+            apply H.
+        -   intro a.
+            apply Ha.
+            apply H0.
+    Qed.
 
     Lemma bisimilar_trans : forall {A B : Typ} (f g h : sf A B),
         bisimilar f g -> bisimilar g h -> bisimilar f h.
-    Admitted.
+    Proof.
+        cofix Ha.
+        intros.
+        inversion H; subst.
+        inversion H0; subst.
+        projT2_ H1.
+        projT2_ H2.
+        projT2_ H3.
+        projT2_ H4.
+        projT2_ Heq.
+        projT2_ Heq0.
+        projT2_ Heq1.
+        projT2_ Heq2.
+        subst.
+        injection Heq0; intros; subst.
+        constructor.
+        -   congruence.
+        -   
+            intro a.
+            apply Ha with (g := snd (g0 a)).
+            apply H6.
+            apply H10.
+Qed.
 
     Infix "∼" := bisimilar (at level 60, right associativity): stream_scope.
-    
-    Open Scope stream_scope.
 
-    Section bisimulation.
+Open Scope stream_scope.
+    Context {A B C : Typ}.
 
-        Context {A B C : Typ}.
-
-        Lemma bisimilar_id : id A ∼ id A.
-        Admitted.
-
-        Lemma bisimilar_comp : forall (f1 f2 : sf A B) (g1 g2 : sf B C),
-            f1 ∼ f2 -> g1 ∼ g2 -> comp f1 g1 ∼ comp f2 g2.
-        Admitted.
-
-        Lemma bisimilar_map : forall (f g : B -> B) (sf1 sf2 : sf A B),
-            sf1 ∼ sf2 -> map f sf1 ∼ map g sf2.
-        Admitted.
-
-        Lemma bisimilar_arr : forall (f g : A -> B),
-            (forall a, f a = g a) -> arr f ∼ arr g.
-        Admitted.
-
-        Lemma bisimilar_first : forall (f g : sf A B),
-            f ∼ g -> @first _ _ C f ∼ first g.
-        Admitted.
-
-        Lemma bisimilar_loop : forall (x : C)
-            (f g : sf (A * C) (B * C)),
-            f ∼ g -> loop x f ∼ loop x g.
-        Admitted.
 
     Record bisimulation (R : relation (sf A B)) : Prop :=
         {
@@ -170,18 +198,251 @@ Module Yampa.
             assumption.
             now apply bisim_tl.
     Qed.
-       
 
-End bisimulation.
+End YampaBisimulation.
 
-Section arrows.
+Infix "∼" := bisimilar (at level 60, right associativity): stream_scope.
+
+Open Scope stream_scope.
+
+Section bisimulation.
+
+
+    Context {A B C : Set}.
+
+    Lemma a : 
+    arr (fun x : A => x) = sf_ (fun a => (a, arr (fun x : A => x))).
+    Admitted.
+    
+    Lemma unroll_arr : 
+    arr (fun x : A => x) = sf_ (fun a => (a, arr (fun x : A => x))).
+    Admitted.
+
+    Lemma unroll_comp : 
+    forall {A B C : Type} (f : A -> B * sf A B) (g : B -> C * sf B C),
+        comp (sf_ f) (sf_ g) = sf_ (fun a => 
+            let (b, f1') := f a in
+            let (c, g1') := g b in
+            (c, comp f1' g1')).
+    Admitted.
+
+    Lemma unroll_first : 
+    forall (f : A -> B * sf A B),
+        @first _ _ C (sf_ f) = sf_ (fun '(a,c) => 
+            let (b, f') := f a in
+            ((b,c), first f')).
+    Admitted.
+
+    Lemma unroll_loop : 
+    forall (c : C) (f : A * C -> (B * C) * sf (A * C) (B * C)),
+        loop c (sf_ f) = sf_ (fun a => 
+            let '((b, c'), f') := f (a, c) in
+            (b, loop c' f')).
+    Admitted.
+
+        Lemma bisimilar_id : id A ∼ id A.
+        Proof.
+            apply bisimilar_refl.
+        Qed.
+
+        Inductive R_bisim_comp (A B : Set): relation (sf A B) :=
+            R_bisim_comp_ : 
+                forall C (f1 f2 : sf A C) (g1 g2 : sf C B), f1 ∼ f2 -> g1 ∼ g2 ->
+                R_bisim_comp _ _ (comp f1 g1) (comp f2 g2).
+
+        Lemma R_bisim_comp_bisim : forall (A B : Set), bisimulation (R_bisim_comp A B).
+        Proof.
+            constructor.
+            -   intros.
+                inversion H; subst; clear H.
+                destruct f1, f2, g1, g2.
+                rewrite (unroll_comp p p1) in H0.
+                rewrite (unroll_comp p0 p2) in H1.
+                injection H0; injection H1; intros; subst; clear H0 H1.
+                destruct (p a0) eqn:Heq1.
+                destruct (p1 c) eqn:Heq2.
+                destruct (p0 a0) eqn:Heq3.
+                destruct (p2 c0) eqn:Heq4.
+                simpl.
+                assert (c = c0).
+                {
+                    inversion H2; subst.
+                    projT2_ H.
+                    projT2_ H0.
+                    projT2_ Heq.
+                    projT2_ Heq0.
+                    subst.
+                    generalize (H5 a0); intro.
+                    rewrite Heq1 in H.
+                    rewrite Heq3 in H.
+                    simpl in H.
+                    assumption.
+                }
+                assert (b = b0).
+                {
+                    inversion H3; subst.
+                    projT2_ H0.
+                    projT2_ H1.
+                    projT2_ Heq.
+                    projT2_ Heq0.
+                    subst.
+                    generalize (H6 c0); intro.
+                    rewrite Heq2 in H.
+                    rewrite Heq4 in H.
+                    simpl in H.
+                    assumption.
+                }
+                assumption.
+    -           intros.
+                inversion H; subst; clear H.
+                destruct f1, f2, g1, g2.
+                rewrite (unroll_comp p p1) in H0.
+                rewrite (unroll_comp p0 p2) in H1.
+                injection H0; injection H1; intros; subst; clear H0 H1.
+                destruct (p a0) eqn:Heq1.
+                destruct (p1 c) eqn:Heq2.
+                destruct (p0 a0) eqn:Heq3.
+                destruct (p2 c0) eqn:Heq4.
+                simpl.
+                constructor.
+                +   inversion H2; subst.
+                    projT2_ H.
+                    projT2_ H0.
+                    projT2_ Heq.
+                    projT2_ Heq0.
+                    subst.
+                    generalize (H6 a0); intro.
+                    rewrite Heq1 in H.
+                    rewrite Heq3 in H.
+                    simpl in H.
+                    assumption.
+                +   assert (c = c0).
+                    {
+                        inversion H2; subst.
+                        projT2_ H.
+                        projT2_ H0.
+                        projT2_ Heq.
+                        projT2_ Heq0.
+                        subst.
+                        generalize (H5 a0); intro.
+                        rewrite Heq1 in H.
+                        rewrite Heq3 in H.
+                        simpl in H.
+                        assumption.
+                    }
+                    inversion H3; subst.
+                    projT2_ H0.
+                    projT2_ H1.
+                    projT2_ Heq.
+                    projT2_ Heq0.
+                    subst.
+                    generalize (H7 c0); intro.
+                    rewrite Heq2 in H.
+                    rewrite Heq4 in H.
+                    simpl in H.
+                    assumption.
+        Qed.
+                
+
+        Lemma bisimilar_comp : forall (f1 f2 : sf A B) (g1 g2 : sf B C),
+            f1 ∼ f2 -> g1 ∼ g2 -> comp f1 g1 ∼ comp f2 g2.
+        Proof.
+            intros.
+            apply bisimulation_gfp with (R := R_bisim_comp A C).
+            apply R_bisim_comp_bisim.
+            apply R_bisim_comp_; assumption.
+        Qed.
+
+        Lemma bisimilar_map : forall (f g : B -> B) (sf1 sf2 : sf A B),
+            sf1 ∼ sf2 -> map f sf1 ∼ map g sf2.
+        Admitted.
+
+        Lemma bisimilar_arr : forall (f g : A -> B),
+            (forall a, f a = g a) -> arr f ∼ arr g.
+        Admitted.
+
+        Inductive R_bisim_first (A B C : Set): relation (sf (A * C) (B * C)) :=
+            R_bisim_first_ : 
+                forall (f g : sf A B), f ∼ g -> 
+                    R_bisim_first A B C (first f) (first g).
+
+        Lemma R_bisim_first_bisim : forall (A B C : Set), bisimulation (R_bisim_first A B C).
+        Admitted.
+
+        Lemma bisimilar_first : forall (f g : sf A B),
+            f ∼ g -> @first _ _ C f ∼ first g.
+        Proof.
+            intros.
+            apply bisimulation_gfp with (R := R_bisim_first A B C).
+            apply R_bisim_first_bisim.
+            apply R_bisim_first_; assumption.
+        Qed.
+
+        Inductive R_bisim_loop (A B : Set): relation (sf A B) :=
+            R_bisim_loop_ : forall (C : Set)
+                (f g : sf (A * C) (B * C)) (c : C), f ∼ g -> 
+                    R_bisim_loop A B (loop c f) (loop c g).
+
+        Lemma R_bisim_loop_bisim : 
+            forall (A B : Set), bisimulation (R_bisim_loop A B).
+        Admitted.
+
+        Lemma bisimilar_loop : forall (x : C)
+            (f g : sf (A * C) (B * C)),
+            f ∼ g -> loop x f ∼ loop x g.
+        Proof.
+            intros.
+            apply bisimulation_gfp with (R := R_bisim_loop A B).
+            apply R_bisim_loop_bisim.
+            apply R_bisim_loop_; assumption.
+        Qed.
+
+    Axiom bisim_eq : forall (A B : Set) (f g : sf A B), 
+        f ∼ g -> f = g.
+
+
+    
+    End bisimulation.
+
+
+Infix "∼" := bisimilar (at level 60, right associativity): stream_scope.
+
+Open Scope stream_scope.
+
+Add Parametric Relation A B : (sf A B) (@bisimilar A B)
+    reflexivity proved by (@bisimilar_refl A B)
+    symmetry proved by (@bisimilar_sym A B)
+    transitivity proved by (@bisimilar_trans A B)
+    as bisimilar_rel.
+
+Add Parametric Morphism (A B C : Set) : (@first A B C)
+    with signature (@bisimilar A B) ==> (@bisimilar (A * C) (B * C)) as tl_mor.
+Proof.
+    apply bisimilar_first.
+Qed.
+
+Add Parametric Morphism (A B C : Set) : (@comp A B C)
+    with signature (@bisimilar A B) ==> (@bisimilar B C) ==> (@bisimilar A C) as comp_mor.
+Proof.
+    intros x y H_equiv1 z w H_equiv2.
+    now apply bisimilar_comp.
+Qed.
+
+Add Parametric Morphism (A B C : Set) : (@loop A B C)
+    with signature eq ==> (@bisimilar (A * C) (B * C)) ==> (@bisimilar A B) as loop_mor.
+Proof.
+    apply bisimilar_loop.
+Qed.
+
+
+Section YampaProperties.
 
     Parameters A B C D : Set.
 
     Inductive R1 : relation (sf A B) :=
         R1_ : forall f, R1 (comp (arr (fun x => x)) f) f.
 
-    Lemma a : 
+    Lemma ax : 
         arr (fun x : A => x) = sf_ (fun a => (a, arr (fun x : A => x))).
     Admitted.
 
@@ -198,7 +459,7 @@ Section arrows.
         destruct (f a0) eqn:Ha.
         reflexivity.
         symmetry.
-        apply a.
+        apply ax.
 Qed.
 
 Lemma c : forall (f : A -> B * sf A B) a, 
@@ -215,7 +476,7 @@ destruct (f a0) eqn:Ha.
 simpl.
 apply R1_.
 symmetry.
-apply a.
+apply ax.
 Qed.
     Lemma R1_bisim : bisimulation R1.
     Proof.
@@ -307,6 +568,90 @@ Qed.
             loop (c,d) (comp (arr unassoc) (comp sf (arr assoc))).
     Admitted.
 
-End arrows.
+End YampaProperties.
 
-End Yampa.
+Section YampaLanguage.
+
+    Inductive SF : Set -> Set -> Type :=
+    | Arr : forall {A B : Set}, (A -> B) -> SF A B
+    | Comp : forall {A B C : Set}, SF A B -> SF B C -> SF A C
+    | First : forall {A B C : Set}, SF A B -> SF (A * C) (B * C)
+    | Loop : forall {A B C : Set}, C -> SF (A * C) (B * C) -> SF A B.
+
+    Fixpoint sem {A B : Set} (f : SF A B) : sf A B :=
+        match f with
+        | Arr h => arr h
+        | Comp f1 f2 => comp (sem f1) (sem f2)
+        | First f => first (sem f)
+        | Loop c f => loop c (sem f)
+        end.
+
+    Definition equiv {A B : Set} : SF A B -> SF A B -> Prop :=
+        fun f g => sem f ∼ sem g.
+
+    Infix "≡" := equiv (at level 60, right associativity): stream_scope.
+
+End YampaLanguage.
+
+Infix "≡" := equiv (at level 60, right associativity): stream_scope.
+
+
+Section YampaEquivalence.
+    
+    Lemma equiv_first : 
+        forall (f g : SF A B),
+            f ≡ g -> @First _ _ C f ≡ First g.
+    Proof.
+        unfold equiv; simpl; intros.
+        rewrite H.
+        reflexivity.
+        Qed.
+
+    Lemma equiv_comp : 
+        forall (f1 f2 : SF A B) (g1 g2 : SF B C),
+            f1 ≡ f2 -> g1 ≡ g2 -> Comp f1 g1 ≡ Comp f2 g2.
+    Proof.
+        unfold equiv; simpl; intros.
+        rewrite H, H0.
+        reflexivity.
+    Qed.
+    
+    Lemma equiv_loop : 
+        forall (c : C) (f g : SF (A * C) (B * C)),
+            f ≡ g -> Loop c f ≡ Loop c g.
+    Proof.
+        unfold equiv; simpl; intros.
+        rewrite H.
+        reflexivity.
+    Qed.
+
+Check tt.
+
+    Inductive R_simpl_eq1 : 
+        relation (sf A B) :=
+    | R_simpl_eq1_ :
+        forall (f : A -> B), 
+            R_simpl_eq1 (arr f) (loop tt (arr (fun '(x,y) => (f x,y)))).
+            
+    Lemma R_simpl_eq1_bisim : bisimulation R_simpl_eq1.
+    Proof.
+    Admitted.
+
+    Lemma simplification : 
+        forall (f : SF A B),
+            exists (C : Set) (c : C) (g : A * C -> B * C), f ≡ Loop c (Arr g).
+    Proof.
+        intro f.
+        induction f.
+        -   exists unit.
+            exists tt.
+            exists (fun '(x,y) => (b0 x, y)).
+            unfold equiv; simpl.
+            generalize (bisimulation_gfp _ R_simpl_eq1_bisim ); intro.
+            (* modifier la définition de bisimulation pour ne pas forcer
+                à avoir des éléments de la forme sf_ f *)
+    Admitted.
+
+
+
+End YampaEquivalence.
