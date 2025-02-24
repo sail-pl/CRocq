@@ -429,7 +429,9 @@ Section Congruence.
         forall (f1 f2 : SF A B) (g1 g2 : SF B C),
             f1 ≡ f2 -> g1 ≡ g2 -> Comp f1 g1 ≡ Comp f2 g2.
     Proof.
-    Admitted.
+        unfold equiv; simpl; intros.
+        now apply bisimilar_comp.
+    Qed.
 
     Lemma equiv_loop : 
         forall (c : C) (f g : SF (A * C) (B * C)),
