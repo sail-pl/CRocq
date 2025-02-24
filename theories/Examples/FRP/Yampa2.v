@@ -114,12 +114,12 @@ Section Category.
     Proof.
         intros.
         apply bisimulation_gfp with (R := R_bisim_csf2 A B).
-        - intros g h H_bisim a b g' h'.
+        - intros g h H_bisim a b g' H_eq.
           simpl in *.
           inversion H_bisim; subst.
           destruct h; simpl in *.
           destruct (p a).
-          inversion h'; subst; clear h'.
+          inversion H_eq; subst; clear H_eq.
           exists s.
           split.
           -- reflexivity.
@@ -138,12 +138,12 @@ Section Category.
     Proof.
         intros.
         apply bisimulation_gfp with (R := R_bisim_csf3 A B C D).
-        - intros f1 f2 H_bisim a b f1' f2'.
+        - intros f1 f2 H_bisim a b f' H_eq.
           simpl in *.
           inversion H_bisim; subst.
           destruct h0, f0, g0; simpl in *.
           destruct (p0 a), (p1 b0), (p c).
-          inversion f2'; subst; clear f2'.
+          inversion H_eq; subst; clear H_eq.
           exists (comp s (comp s0 s1)).
           split.
           -- reflexivity.
@@ -199,11 +199,11 @@ Section Semantics.
         intro A.
         apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
         apply bisimulation_gfp with (R := R_bisim_ff1 A).
-        - intros f g H_bisim a b f' g'.
+        - intros f g H_bisim a b f' H_eq.
             simpl in *.
             inversion H_bisim; subst.
             simpl in *.
-            inversion g'; subst; clear g'.
+            inversion H_eq; subst; clear H_eq.
             exists (id A).
             split.
             -- reflexivity.
@@ -280,15 +280,39 @@ Section Congruence.
 
     Lemma R_bisim_comp_bisim : forall (A B : Typ), bisimulation (R_bisim_comp A B).
     Proof.
-    Admitted.
+        intros A B f g H_bisim a c f' H_eq.
+        inversion H_bisim; subst; clear H_bisim.
+        simpl in *.
+        inversion H; subst; simpl in *.
+        destruct f1 as [p1].
+        destruct (p1 a) eqn:H_res1.
+        specialize (H1 a c0 s H_res1).
+        destruct f2 as [p2].
+        destruct H1 as [s' [H_res1' H_bisim1]].
+        clear H.
+        inversion H0; subst; simpl in *.
+        destruct g1 as [q1].
+        rewrite H_res1 in H_eq.
+        destruct (q1 c0) eqn:H_res2.
+        inversion H_eq; subst; clear H_eq.
+        specialize (H c0 c s0 H_res2).
+        destruct g2 as [q2].
+        destruct H as [s0' [H_res2' H_bisim2]].
+        rewrite H_res1'.
+        rewrite H_res2'.
+        exists (comp s' s0').
+        split.
+        - reflexivity.
+        - now apply R_bisim_comp_.
+    Qed.
             
     Lemma bisimilar_comp : forall (A B C : Typ) (f1 f2 : sf A B) (g1 g2 : sf B C),
         f1 ∼ f2 -> g1 ∼ g2 -> comp f1 g1 ∼ comp f2 g2.
     Proof.
         intros.
         apply bisimulation_gfp with (R := R_bisim_comp A C).
-        apply R_bisim_comp_bisim.
-        apply R_bisim_comp_; assumption.
+        - apply R_bisim_comp_bisim.
+        - apply R_bisim_comp_; assumption.
     Qed.
 
     Inductive R_bisim_first (A B C : Typ): relation (sf (A * C) (B * C)) :=
@@ -297,7 +321,23 @@ Section Congruence.
             R_bisim_first A B C (first f) (first g).
 
     Lemma R_bisim_first_bisim : forall (A B C : Typ), bisimulation (R_bisim_first A B C).
-    Admitted.
+    Proof.
+        intros A B C f g H_bisim a b h H_eq.
+        inversion H_bisim; subst.
+        simpl in *.
+        destruct f0, a.
+        destruct (p a) eqn:H_res.
+        inversion H_eq; subst; clear H_eq.
+        inversion H; subst; simpl in *.
+        destruct g0 as [p'].
+        specialize (H0 a b0 s H_res).
+        destruct H0 as [s' [H_res' H_bisim']].
+        rewrite H_res'.
+        exists (first s').
+        split.
+        - reflexivity.
+        - now apply R_bisim_first_.
+    Qed.
 
     Lemma bisimilar_first : forall (A B C : Typ) (f g : sf A B),
         f ∼ g -> @first _ _ C f ∼ first g.
@@ -315,7 +355,25 @@ Section Congruence.
 
     Lemma R_bisim_loop_bisim : 
         forall (A B : Typ), bisimulation (R_bisim_loop A B).
-    Admitted.
+    Proof.
+        intros A B f g H_bisim a b h H_eq.
+        inversion H_bisim; subst.
+        simpl in *.
+        destruct f0 as [p].
+        destruct (p (a, c)) eqn:H_res.
+        destruct p0 as [a' c'].
+        inversion H_eq; subst; clear H_eq.
+        inversion H; subst.
+        simpl in *.
+        specialize (H0 (a,c) (b,c') s H_res).
+        destruct g0 as [p'].
+        destruct H0 as [s' [H_res' H_bisim']].
+        rewrite H_res'.
+        exists (loop c' s').
+        split.
+        - reflexivity.
+        - now apply R_bisim_loop_.
+    Qed.
 
     Lemma bisimilar_loop : forall (A B C : Typ) (x : C)
         (f g : sf (A * C) (B * C)),
