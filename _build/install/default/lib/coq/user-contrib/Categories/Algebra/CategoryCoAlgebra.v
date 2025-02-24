@@ -1,1 +1,0 @@
-../../../../../../../default/theories/Algebra/CategoryCoAlgebra.v
