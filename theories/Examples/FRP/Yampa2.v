@@ -194,10 +194,9 @@ Section Semantics.
     Inductive R_bisim_ff1 (A : Typ) : relation (sf A A) :=
     R_bisim_ff1_ : R_bisim_ff1 _ (arr (idty A)) (idty _).
 
-    Lemma ff1 : forall a : Typ, arr (idty a) = idty _.
+    Lemma ff1 : forall a : Typ, arr (idty a) ∼ idty _.
     Proof. 
         intro A.
-        apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
         apply bisimulation_gfp with (R := R_bisim_ff1 A).
         - intros f g H_bisim a b f' H_eq.
             simpl in *.
@@ -216,10 +215,9 @@ Section Semantics.
         R_bisim_ff2 _ _ _ (arr g ∘ arr f) (arr (g ∘ f)).
 
     Lemma ff2 : forall (A B C : Typ) (g : Typ B C) (h : Typ A B),
-        arr g ∘ arr h = arr (g ∘ h).
+        arr g ∘ arr h  ∼ arr (g ∘ h).
     Proof.
         intros A B C g h.
-        apply (bisimulation_extentionality A C (CoAlgebrasf A C)).
         apply bisimulation_gfp with (R := R_bisim_ff2 A B C).
         - intros f1 f2 H_bisim a b f1' H_eq.
           simpl in *.
@@ -238,8 +236,12 @@ Section Semantics.
         fobj := fun X => X;
         fmap := @arr
     }.
-    - apply ff1.
-    - apply ff2.
+    - intro A.
+      apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
+      apply ff1.
+    - intros A B C g h.
+      apply (bisimulation_extentionality A C (CoAlgebrasf A C)).
+      apply ff2.
     Defined.    
 
     Fixpoint sem {A B : Typ} (f : SF A B) : sf A B :=
@@ -451,50 +453,54 @@ Section ArrowProperties.
 
     Definition unassoc {A B C : Typ} : A * (B * C) -> (A * B) * C :=
     fun '(a,(b,c)) => ((a,b),c).
-
-    Inductive R_eq_2a (A B: Typ) : relation (sf A B) :=
-        R_eq_2a_ : forall (a : sf A B),
-            R_eq_2a _ _ (comp (arr (idty _)) a) a.
     
     Lemma arrow_eq_2a : forall (A B : Typ) (a : sf A B), 
         comp (arr (idty A)) a ∼ a.
     Proof.
         intros.
-        assert (bisimulation (R_eq_2a A B)).
-        {
-            unfold bisimulation.
-            intros f g H_eq1 x y f' H_eq2.
-            inversion H_eq1; subst.
-            simpl in *.
-            destruct g.
-            destruct (p x) eqn:Ha.
-            injection H_eq2; intros; subst.
-            exists s.
-            split.
-            reflexivity.
-            apply R_eq_2a_.
-        }
-        now apply bisimulation_gfp with (R := R_eq_2a A B).
+        transitivity (comp (id A) a).
+        - apply bisimilar_comp.
+          -- apply ff1.
+          -- reflexivity.
+        - apply csf1.
     Qed.
 
     Lemma arrow_eq_2b : forall (A B : Typ) (a : sf A B),
-        comp a (arr (fun x => x)) ∼ a.
-    Admitted.
+        comp a (arr (idty B)) ∼ a.
+    Proof.
+        intros.
+        transitivity (comp a (id B)).
+        - apply bisimilar_comp.
+          -- reflexivity.
+          -- apply ff1.
+        - apply csf2.
+    Qed.
 
     Lemma arrow_eq_2c : 
         forall (A B C D: Typ) (sf1 : sf A B) (sf2 : sf B C) (sf3 : sf C D),
             comp (comp sf1 sf2) sf3 ∼ comp sf1 (comp sf2 sf3).
-    Admitted.
+    Proof.
+        intros.
+        apply csf3.
+    Qed.
 
     Lemma arrow_eq_2d : 
         forall (A B C : Typ) (f : Typ A B) (g : Typ B C),
             arr (fun x => g (f x)) ∼ comp (arr f) (arr g).
-    Admitted.
+    Proof.
+        intros.
+        transitivity (arr (g ∘ f)).
+        - reflexivity.
+        - symmetry. 
+          apply ff2.
+    Qed.
 
     Lemma arrow_eq_2e :
         forall (A B C : Typ) (sf : sf A B),
             comp (@first _ _ C sf) (arr (fun '(x,y) => x)) ∼ 
                 comp (arr (fun '(x,y) => x)) sf.
+    Proof.
+        
     Admitted.
 
     Lemma arrow_eq_2f : 
