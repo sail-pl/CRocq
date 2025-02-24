@@ -74,13 +74,13 @@ Section Category.
         rewrite decompose_eq at 1. reflexivity.
     Qed.
 
-    Inductive R_bisim_id_comp (A B : Typ): relation (sf A B) :=
-    R_bisim_id_comp_ : 
-        forall (f : sf A B), R_bisim_id_comp _ _ (comp (id A) f) f.
+    Inductive R_bisim_csf1 (A B : Typ): relation (sf A B) :=
+    R_bisim_csf1_ : 
+        forall (f : sf A B), R_bisim_csf1 _ _ (comp (id A) f) f.
 
 
-    Lemma R_bisim_id_comp_bisim : 
-        forall (A B : Typ), bisimulation (R_bisim_id_comp A B).
+    Lemma R_bisim_csf1_bisim : 
+        forall (A B : Typ), bisimulation (R_bisim_csf1 A B).
     Proof.
         intros A B.
         unfold bisimulation.
@@ -93,26 +93,63 @@ Section Category.
         exists s.
         split.
         reflexivity.
-        apply R_bisim_id_comp_.
+        apply R_bisim_csf1_.
     Qed.
 
     Lemma csf1 :
-        forall (a b : Typ) (f : sf a b), comp (id a) f ∼ f.
+        forall (A B : Typ) (f : sf A B), comp (id A) f ∼ f.
     Proof.
         intros.
-        apply bisimulation_gfp with (R := R_bisim_id_comp a b).
-        - apply R_bisim_id_comp_bisim.
+        apply bisimulation_gfp with (R := R_bisim_csf1 A B).
+        - apply R_bisim_csf1_bisim.
         - constructor. 
     Qed.
 
+    Inductive R_bisim_csf2 (A B : Typ): relation (sf A B) :=
+    R_bisim_csf2_ : 
+        forall (f : sf A B), R_bisim_csf2 _ _ (comp f (id B)) f.
+
     Lemma csf2 : 
-        forall (a b : Typ) (f : sf a b), comp f (id b) ∼ f.
-    Admitted.
+        forall (A B : Typ) (f : sf A B), comp f (id B) ∼ f.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_csf2 A B).
+        - intros g h H_bisim a b g' h'.
+          simpl in *.
+          inversion H_bisim; subst.
+          destruct h; simpl in *.
+          destruct (p a).
+          inversion h'; subst; clear h'.
+          exists s.
+          split.
+          -- reflexivity.
+          -- apply R_bisim_csf2_. 
+        - constructor. 
+    Qed.
+
+    Inductive R_bisim_csf3 (A B C D : Typ): relation (sf A D) :=
+    R_bisim_csf3_ : 
+        forall (f : sf A B) (g : sf B C) (h : sf C D),  
+            R_bisim_csf3 _ _ _ _ (comp (comp f g) h) (comp f (comp g h)).
 
     Lemma csf3 : 
-    forall (a b c d : Typ) (f : sf a b) (g : sf b c) (h : sf c d),
+    forall (A B C D : Typ) (f : sf A B) (g : sf B C) (h : sf C D),
         comp (comp f g) h ∼ comp f (comp g h).
-    Admitted.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_csf3 A B C D).
+        - intros f1 f2 H_bisim a b f1' f2'.
+          simpl in *.
+          inversion H_bisim; subst.
+          destruct h0, f0, g0; simpl in *.
+          destruct (p0 a), (p1 b0), (p c).
+          inversion f2'; subst; clear f2'.
+          exists (comp s (comp s0 s1)).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_csf3_. 
+        - constructor. 
+    Qed.
 
     #[refine] Global Instance CategorySF : Category :=
             {
