@@ -47,6 +47,12 @@ Section Bisimilarity.
 
 End Bisimilarity.
 
+Axiom bisimulation_extentionality : 
+forall (A B : Typ) (X : CoAlgebra (FunctorProc A B)) 
+    (f g : coalgebra_obj X),
+        bisimilar f g -> f = g.
+
+
 Section BisimilarityFacts.
 
     Lemma bisimilar_refl : 
@@ -140,6 +146,8 @@ Add Parametric Relation (A B : Typ) (X : CoAlgebra (FunctorProc A B))
     symmetry proved by (@bisimilar_sym A B X X)
     transitivity proved by (@bisimilar_trans A B X X X)
     as bisimilar_rel.
+
+Declare Scope stream_scope.
 
 Infix "∼" := bisimilar (at level 60, right associativity): stream_scope.
 
