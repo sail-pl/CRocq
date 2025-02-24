@@ -710,7 +710,172 @@ Section ArrowProperties.
 
 End ArrowProperties.
 
+
 Section Simplification.
+
+    Inductive R_bisim_simp_arr (A B : Typ) : relation (sf A B) :=
+    R_bisim_simp_arr_ : forall (f : Typ A B), 
+        R_bisim_simp_arr _ _ (arr f) (loop tt (arr (fun '(a, _) => (f a, tt)))).
+
+    Lemma simplify_arr : 
+        forall (A B : Typ) (f : Typ A B),
+            arr f ∼ loop tt (arr (fun '(a, _) => (f a, tt))).
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_simp_arr A B).
+        - intros h g H_bisim a b f' H_eq.
+        inversion H_bisim; subst; clear H_bisim.
+        simpl in *.
+        inversion H_eq; subst; clear H_eq.
+        exists (loop tt (arr (fun '(a0, _) => (f0 a0, tt)))).
+        split.
+        -- reflexivity.
+        -- apply R_bisim_simp_arr_.
+        - constructor.
+    Qed.
+    
+    Inductive R_bisim_simp_first (A B C D : Typ) : relation (sf (A * C) (B * C)) :=
+    R_bisim_simp_first_ : forall (d : D) (sf : sf A B) (f : Typ (A * D) (B * D)), 
+        sf ∼ loop d (arr f) ->
+        R_bisim_simp_first _ _ _ _ 
+            (first sf) (loop d (arr (fun '(a, d, c) => let (b, c') := f (a, c) in (b, d, c')))).
+
+    Lemma R_bisim_simp_first_bisim (A B C D : Typ) : bisimulation (R_bisim_simp_first A B C D).
+    Proof.
+        intros h g H_bisim a b f' H_eq.
+        inversion H_bisim; subst; clear H_bisim.
+        simpl in *.
+        destruct sf0.
+        destruct a as [a c].
+        destruct b as [b c'].
+        destruct (p a) eqn:H_res.
+        inversion H_eq; subst; clear H_eq.
+        inversion H; subst.
+        simpl in *.
+        specialize (H0 a b s H_res).
+        destruct (f (a,d)) eqn:H_res'.
+        destruct H0 as [s' [H_eq H_bisim]].
+        inversion H_eq; subst; clear H_eq.
+        exists (loop d0 (arr (fun '(a0, d1, c) => 
+                    let (b0, c'0) := f (a0, c) in (b0, d1, c'0)))).
+        split.
+        - reflexivity.
+        - now apply R_bisim_simp_first_.
+    Qed.
+
+    Lemma simplify_first (A B C D : Typ) :
+        forall (sf : sf A B) (d : D) (f : A * D -> B * D), 
+            sf ∼ loop d (arr f) ->
+            @first _ _ C sf ∼ 
+            loop d (arr (fun '(a, d, c) => let (b, c') := f (a, c) in (b, d, c'))).
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_simp_first A B C D).
+        -- apply R_bisim_simp_first_bisim.
+        -- now apply R_bisim_simp_first_.
+    Qed.
+
+    Inductive R_bisim_simp_comp (A B C D E : Typ) : relation (sf A C) :=
+    R_bisim_simp_comp_ : forall (d : D) (e : E)
+                                (sf1 : sf A B) 
+                                (sf2 : sf B C) 
+                                (f1 : Typ (A * D) (B * D))
+                                (f2 : Typ (B * E) (C * E)), 
+        sf1 ∼ loop d (arr f1) ->
+        sf2 ∼ loop e (arr f2) ->
+        R_bisim_simp_comp _ _ _ _ _
+            (comp sf1 sf2) 
+            (loop (d, e) (arr (fun '(a, (c1, c2)) =>
+                let (b, c1') := f1 (a, c1) in 
+                let (c, c2') := f2 (b, c2) in (c, (c1', c2'))))).
+
+    Lemma R_bisim_simp_comp_bisim (A B C D E : Typ) : 
+        bisimulation (R_bisim_simp_comp A B C D E).
+    Proof.
+        intros h g H_bisim a b f' H_eq.
+        inversion H_bisim; subst; clear H_bisim.
+        simpl in *.
+        destruct sf1, sf2.
+        destruct (p a) eqn:H_res.
+        destruct (p0 b0) eqn:H_res'.
+        inversion H_eq; subst; clear H_eq.
+        inversion H; subst.
+        simpl in *.
+        specialize (H1 a b0 s H_res).
+        destruct (f1 (a,d)) eqn:H_res1.
+        destruct H1 as [s' [H_eq H_bisim]].
+        inversion H_eq; subst; clear H_eq.
+        inversion H0; subst.
+        simpl in *.
+        specialize (H1 b0 b s0 H_res').
+        destruct (f2 (b0,e)) eqn:H_res2.
+        destruct H1 as [s0' [H_eq H_bisim']].
+        inversion H_eq; subst; clear H_eq.
+        exists (loop (d0, e0) 
+                     (arr (fun '(a0, (c1, c2)) => 
+                        let (b1, c1') := f1 (a0, c1) in 
+                        let (c, c2') := f2 (b1, c2) in (c, (c1', c2'))))).
+        split.
+        - reflexivity.
+        - now apply R_bisim_simp_comp_.
+    Qed.
+
+    Lemma simplify_comp (A B C D E : Typ) :
+        forall  (d : D) (e : E)
+                (sf1 : sf A B) 
+                (sf2 : sf B C) 
+                (f1 : Typ (A * D) (B * D))
+                (f2 : Typ (B * E) (C * E)), 
+            sf1 ∼ loop d (arr f1) -> sf2 ∼ loop e (arr f2) ->
+            (comp sf1 sf2) ∼
+            (loop (d, e) (arr (fun '(a, (c1, c2)) =>
+                let (b, c1') := f1 (a, c1) in 
+                let (c, c2') := f2 (b, c2) in (c, (c1', c2'))))).
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_simp_comp A B C D E).
+        - apply R_bisim_simp_comp_bisim.
+        - now constructor.
+    Qed.
+
+
+    Inductive R_bisim_simp_loop (A B C D : Typ) : relation (sf (A * (B * C)) (D * (B * C))) :=
+    R_bisim_simp_loop_ : forall (f : (A * B * C) -> (D * B * C)),
+        R_bisim_simp_loop _ _ _ _
+            (comp (arr unassoc) (comp (arr f) (arr assoc))) 
+            (arr (fun '(a, (c0, c1)) => let '(b, c', c0') := f (a, c0, c1) in (b, (c', c0')))).
+    
+    Lemma R_bisim_simp_loop_bisim (A B C D : Typ) : 
+        bisimulation (R_bisim_simp_loop A B C D).
+    Proof.
+        intros h g H_bisim a b f' H_eq.
+        inversion H_bisim; subst; clear H_bisim.
+        simpl in *.
+        inversion H_eq; subst; clear H_eq.
+        destruct a as [a [b c]].
+        destruct (f (a, b, c)) eqn:H_res.
+        destruct p as [b' c'].
+        simpl in *.
+        exists (arr (fun '(a0, (c1, c2)) => 
+                    let '(b0, c'0, c0') := f (a0, c1, c2) in (b0, (c'0, c0')))).
+        split.
+        - rewrite H_res. 
+          simpl in *. 
+          reflexivity.
+        - now apply R_bisim_simp_loop_.
+    Qed.
+
+    Lemma simplify_loop (A B C D : Typ) :
+        forall (f : (A * B * C) -> (D * B * C)), 
+            (comp (arr unassoc) (comp (arr f) (arr assoc))) ∼
+            (arr (fun '(a, (c0, c1)) => let '(b, c', c0') := f (a, c0, c1) in (b, (c', c0')))).
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_simp_loop A B C D).
+        - apply R_bisim_simp_loop_bisim.
+        - now constructor.
+    Qed.
+
     Lemma simplify : 
         forall (A B : Typ) (sf : SF A B),
             exists (C : Typ) (v : C) (f : Typ (A * C) (B * C)),
@@ -721,7 +886,8 @@ Section Simplification.
         -   exists unit. exists tt.
             exists (fun '(a,_) => (h a, tt)).
             unfold equiv.
-            admit.
+            simpl.
+            apply simplify_arr.
         -   destruct IHsf1 as [C1 [v1 [f1 H1]]].
             destruct IHsf2 as [C2 [v2 [f2 H2]]].
             exists (C1 * C2). exists (v1, v2).
@@ -729,14 +895,30 @@ Section Simplification.
                 let (b, c1') := f1 (a, c1) in
                 let (c, c2') := f2 (b, c2) in
                 (c, (c1', c2'))).
-            admit.
+            unfold equiv in *.
+            simpl in *.
+            now apply simplify_comp.
         -   destruct IHsf as [D [v [f H]]].
             exists D. exists v.
             exists (fun '((a, d), c) => 
                 let (b, c') := f (a, c) in
                 ((b, d), c')).
-            admit.
-    Admitted.
+            unfold equiv in *.
+            simpl in *.
+            now apply simplify_first.
+        - destruct IHsf as [C0 [v [f H]]].
+          exists (C * C0), (c,v).
+          exists (fun '(a,(c,c0)) =>
+                    let '((b,c'),c0') := f (a,c,c0) in (b,(c',c0'))).
+          unfold equiv in *.
+          simpl in *.
+          transitivity (loop c (loop v (arr f))).
+          -- now apply bisimilar_loop.
+          -- transitivity ((loop (c,v) (comp (arr unassoc) (comp (arr f) (arr assoc))))).
+             + apply arrow_eq_3c.
+             + apply bisimilar_loop.
+               apply simplify_loop.
+    Qed.
 
 End Simplification.
 
