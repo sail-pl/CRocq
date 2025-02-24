@@ -77,9 +77,36 @@ Section Category.
         rewrite decompose_eq at 1. reflexivity.
     Qed.
 
+    Inductive R_bisim_id_comp (A B : Typ): relation (sf A B) :=
+    R_bisim_id_comp_ : 
+        forall (f : sf A B), R_bisim_id_comp _ _ (comp (id A) f) f.
+
+
+    Lemma R_bisim_id_comp_bisim : 
+        forall (A B : Typ), bisimulation (R_bisim_id_comp A B).
+    Proof.
+        intros A B.
+        unfold bisimulation.
+        intros f g H_eq1 x y f' H_eq2.
+        inversion H_eq1; subst.
+        simpl in *.
+        destruct g.
+        destruct (p x) eqn:Ha.
+        injection H_eq2; intros; subst.
+        exists s.
+        split.
+        reflexivity.
+        apply R_bisim_id_comp_.
+    Qed.
+
     Lemma csf1 :
         forall (a b : Typ) (f : sf a b), comp (id a) f ∼ f.
-    Admitted.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_id_comp a b).
+        - apply R_bisim_id_comp_bisim.
+        - constructor. 
+    Qed.
 
     Lemma csf2 : 
         forall (a b : Typ) (f : sf a b), comp f (id b) ∼ f.
@@ -116,8 +143,25 @@ Section Functor.
     CoFixpoint fmap {A B : Typ} (f : A -> B) : sf A B :=
         sf_ (fun a => (f a, fmap f)).
 
-    Lemma ff1 : forall a : Typ, fmap (idty a) = idty _.
-    Admitted.
+    Inductive R_bisim_fmap_id (A : Typ) : relation (sf A A) :=
+    R_bisim_fmap_id_ : R_bisim_fmap_id _ (fmap (idty A)) (idty _).
+
+    Lemma ff1 : forall A : Typ, fmap (idty A) = idty _.
+    Proof.
+        intro A.
+        apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
+        apply bisimulation_gfp with (R := R_bisim_fmap_id A).
+        - intros f g H_bisim a b f' g'.
+          simpl in *.
+          inversion H_bisim; subst.
+          simpl in *.
+          inversion g'; subst; clear g'.
+          exists (id A).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_fmap_id_.
+        - constructor.
+    Qed.
 
     Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
     fmap g ∘ fmap h = fmap (g ∘ h).
@@ -397,6 +441,7 @@ Section Simplification.
         induction sf.
         -   exists unit. exists tt.
             exists (fun '(a,_) => (h a, tt)).
+            unfold equiv.
             admit.
         -   destruct IHsf1 as [C1 [v1 [f1 H1]]].
             destruct IHsf2 as [C2 [v2 [f2 H2]]].
