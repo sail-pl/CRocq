@@ -23,9 +23,12 @@ Section YampaSemanticsDomain.
         coalgebra_morph := fun sf => match sf with sf_ f => f end 
     }.
 
+    (* Functor *)
+    (**********************************************************************)
 
     (* Category *)
     (**********************************************************************)
+
 
     CoFixpoint id (A : Typ) : sf A A :=
         sf_ (fun a => (a, id A)).
@@ -67,6 +70,19 @@ Section YampaSemanticsDomain.
         rewrite decompose_eq at 1. reflexivity.
     Qed.
 
+    Lemma csf1 :
+    forall (a b : Typ) (f : sf a b), comp (id a) f = f.
+    Admitted.
+
+    Lemma csf2 : 
+    forall (a b : Typ) (f : sf a b), comp f (id b) = f.
+    Admitted.
+
+    Lemma csf3 : 
+    forall (a b c d : Typ) (f : sf a b) (g : sf b c) (h : sf c d),
+        comp (comp f g) h = comp f (comp g h).
+    Admitted.
+
     #[refine] Instance CategorySF : Category :=
             {
                 obj := Typ;
@@ -75,24 +91,331 @@ Section YampaSemanticsDomain.
                 compose := fun _ _ _ x y => comp y x
             }.
     Proof.
-    -   intros A B [f].
-        rewrite unroll_id.
-        rewrite unroll_comp.
-        f_equal.
-        apply functional_extensionality.
-        intro x.
-        destruct (f x) eqn:Ha.
+    - apply csf1.
+    - apply csf2.
+    - apply csf3.
+    Defined.
+
+    Section Functor.
+
+        CoFixpoint fmap {A B : Typ} (f : A -> B) : sf A B :=
+                sf_ (fun a => (f a, fmap f)).
+
+        Lemma ff1 : forall a : Typ, fmap (idty a) = idty _.
+        Admitted.
+
+        Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
+        fmap g ∘ fmap h = fmap (g ∘ h).
+        Admitted.
+
+        #[refine] Instance FunctorF : Functor Typ CategorySF :=
+        {
+            fobj := fun X => X;
+            fmap := @fmap
+        }.
+        - apply ff1.
+        - apply ff2.
+        Defined.    
+    
+End Functor.
+
+Arguments sf_ [A B] _.
+
+Section Semantics.
+
+    Definition arr {A B : Typ} : (Typ A B) -> sf A B := fmap.
+
+    CoFixpoint first {A B C : Type} (f : sf A B) : sf (A * C) (B * C) :=
+        match f with sf_ f =>
+            sf_ (fun '(a,c) => 
+                let (b, f') := f a in
+                ((b,c), first f'))
+            end. 
+
+    CoFixpoint loop {A B C : Type} (c : C) (f : sf (A * C) (B * C)) : sf A B :=
+        sf_ (fun a => 
+        match f with sf_ f =>
+            let '((b,c'), f') := f (a, c) in
+            (b, loop c' f')
+            end).
+
+End Semantics.
+
+Section Arrow.
+
+    Definition assoc {A B C : Typ} : (A * B) * C -> A * (B * C) :=
+    fun '((a,b),c) => (a,(b,c)).
+
+    Definition unassoc {A B C : Typ} : A * (B * C) -> (A * B) * C :=
+    fun '(a,(b,c)) => ((a,b),c).
+
+    Inductive R_eq_2a (A B: Typ) : relation (sf A B) :=
+        R_eq_2a_ : forall (a : sf A B),
+            R_eq_2a _ _ (comp (arr (idty _)) a) a.
+    
+    Lemma arrow_eq_2a : forall (A B : Typ) (a : sf A B), 
+        comp (arr (idty A)) a ∼ a.
+    Proof.
+        intros.
+        assert (bisimulation (R_eq_2a A B)).
+        {
+            unfold bisimulation.
+            intros f g H_eq1 x y f' H_eq2.
+            inversion H_eq1; subst.
+            simpl in *.
+            destruct g.
+            destruct (p x) eqn:Ha.
+            injection H_eq2; intros; subst.
+            exists s.
+            split.
+            reflexivity.
+            apply R_eq_2a_.
+        }
+        now apply bisimulation_gfp with (R := R_eq_2a A B).
+    Qed.
+
+    Lemma arrow_eq_2b : forall (A B : Typ) (a : sf A B),
+        comp a (arr (fun x => x)) ∼ a.
     Admitted.
 
-    (* Arrow *)
-    (**********************************************************************)
+    Lemma arrow_eq_2c : 
+        forall (A B C D: Typ) (sf1 : sf A B) (sf2 : sf B C) (sf3 : sf C D),
+            comp (comp sf1 sf2) sf3 ∼ comp sf1 (comp sf2 sf3).
+    Admitted.
+
+    Lemma arrow_eq_2d : 
+        forall (A B C : Typ) (f : Typ A B) (g : Typ B C),
+            arr (fun x => g (f x)) ∼ comp (arr f) (arr g).
+    Admitted.
+
+    Lemma arrow_eq_2e :
+        forall (A B C : Typ) (sf : sf A B),
+            comp (@first _ _ C sf) (arr (fun '(x,y) => x)) ∼ 
+                comp (arr (fun '(x,y) => x)) sf.
+    Admitted.
+
+    Lemma arrow_eq_2f : 
+        forall (A B : Typ) (sf : sf A B) (f : Typ A B),
+            comp (first sf) (arr (fun '(x,y) => (x, f y))) ∼
+                comp (arr (fun '(x,y) => (x,f y))) (first sf).
+    Admitted.
+
+    Lemma arrow_eq_2g : 
+        forall (A B C D : Typ) (sf : sf A B),
+            comp (@first _ _ D (@first _ _ C sf)) (arr assoc) ∼ 
+            comp (arr assoc) (first sf).
+    Admitted.
+
+    Lemma arrow_eq_2h :     
+        forall (A B C : Typ) (f : Typ A B),
+        @first _ _ C (arr f) ∼ arr (fun '(x,y) => (f x, y)).
+    Admitted.
+
+    Lemma arrow_eq_2i : forall (A B C D : Type) (a : sf A B) (b : sf B C),
+        @first _ _ D (comp a b) ∼ comp (first a) (first b).
+    Proof.
+    Admitted.
+
+    Lemma arrow_eq_3a :
+        forall (A B C D : Typ) (c : D) (sf1 : sf A B) (sf2 : sf (B * D) (C * D)),
+            loop c (comp (first sf1) sf2) ∼ @comp _ _ C sf1 (loop c sf2).
+    Admitted.
+
+    Lemma arrow_eq_3b :
+        forall (A B C D : Typ) (c : D) (sf1 : sf (A * D) (B * D)) (sf2 : sf B C),
+            loop c (comp sf1 (first sf2)) ∼ comp (loop c sf1) sf2.
+    Admitted.
+
+    Lemma arrow_eq_3c :
+        forall (A B C D : Typ) (sf : sf ((A * C) * D) ((B * C) * D)) (c : C) (d : D), 
+        loop c (loop d sf) ∼ 
+            loop (c,d) (comp (arr unassoc) (comp sf (arr assoc))).
+    Admitted.
+
+End Arrow.
+
+Section YampaLanguage.
+
+    Inductive SF : Typ -> Typ -> Type :=
+    | Arr : forall {A B : Typ}, (Typ A B) -> SF A B
+    | Comp : forall {A B C : Typ}, SF A B -> SF B C -> SF A C
+    | First : forall {A B C : Typ}, SF A B -> SF (A * C) (B * C)
+    | Loop : forall {A B C : Typ}, C -> SF (A * C) (B * C) -> SF A B.
+
+    Fixpoint sem {A B : Typ} (f : SF A B) : sf A B :=
+        match f with
+        | Arr h => arr h
+        | Comp f1 f2 => comp (sem f1) (sem f2)
+        | First f => first (sem f)
+        | Loop c f => loop c (sem f)
+        end.
+
+    Definition equiv {A B : Typ} : SF A B -> SF A B -> Prop :=
+        fun f g => sem f ∼ sem g.
+
+    Infix "≡" := equiv (at level 60, right associativity): stream_scope.
+
+End YampaLanguage.
+
+Infix "≡" := equiv (at level 60, right associativity): stream_scope.
+
+Section ProcessFunctor.
+    
+    (* Parameters (A B : Type).
+    Check (Proc A B (sf A B)).
+
+    Definition fmap' {A B X Y : Type} (f : X -> Y) 
+        (p : Proc A B X) : Proc A B Y :=
+        fun a => 
+            let (b, x) := p a in
+            (b, f x). *)
+
+End ProcessFunctor.
 
 
-    (* co algebra *)
-End YampaSemanticsDomain.
+    Inductive R_bisim_comp (A B : Typ): relation (sf A B) :=
+    R_bisim_comp_ : 
+        forall C (f1 f2 : sf A C) (g1 g2 : sf C B), f1 ∼ f2 -> g1 ∼ g2 ->
+        R_bisim_comp _ _ (comp f1 g1) (comp f2 g2).
+
+    Lemma R_bisim_comp_bisim : forall (A B : Typ), bisimulation (R_bisim_comp A B).
+    Proof.
+    Admitted.
+            
+    Lemma bisimilar_comp : forall (A B C : Typ) (f1 f2 : sf A B) (g1 g2 : sf B C),
+        f1 ∼ f2 -> g1 ∼ g2 -> comp f1 g1 ∼ comp f2 g2.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_comp A C).
+        apply R_bisim_comp_bisim.
+        apply R_bisim_comp_; assumption.
+    Qed.
+
+    Inductive R_bisim_first (A B C : Typ): relation (sf (A * C) (B * C)) :=
+    R_bisim_first_ : 
+        forall (f g : sf A B), f ∼ g -> 
+            R_bisim_first A B C (first f) (first g).
+
+    Lemma R_bisim_first_bisim : forall (A B C : Typ), bisimulation (R_bisim_first A B C).
+    Admitted.
+
+    Lemma bisimilar_first : forall (A B C : Typ) (f g : sf A B),
+        f ∼ g -> @first _ _ C f ∼ first g.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_first A B C).
+        apply R_bisim_first_bisim.
+        apply R_bisim_first_; assumption.
+    Qed.
+
+    Inductive R_bisim_loop (A B : Typ): relation (sf A B) :=
+        R_bisim_loop_ : forall (C : Typ)
+            (f g : sf (A * C) (B * C)) (c : C), f ∼ g -> 
+                R_bisim_loop A B (loop c f) (loop c g).
+
+    Lemma R_bisim_loop_bisim : 
+        forall (A B : Typ), bisimulation (R_bisim_loop A B).
+    Admitted.
+
+    Lemma bisimilar_loop : forall (A B C : Typ) (x : C)
+        (f g : sf (A * C) (B * C)),
+        f ∼ g -> loop x f ∼ loop x g.
+    Proof.
+        intros.
+        apply bisimulation_gfp with (R := R_bisim_loop A B).
+        apply R_bisim_loop_bisim.
+        apply R_bisim_loop_; assumption.
+    Qed.
+
+    Add Parametric Morphism (A B C : Typ) : 
+        (@first A B C)
+        with 
+            signature (@bisimilar A B (CoAlgebrasf A B) (CoAlgebrasf A B)) ==> 
+                (@bisimilar (A * C) (B * C) (CoAlgebrasf (A * C) (B * C)) 
+                    (CoAlgebrasf (A * C) (B * C))) 
+        as tl_mor.
+    Proof.
+        apply bisimilar_first.
+    Qed.
+
+    (* Add Parametric Morphism (A B C : Typ) : (@comp A B C)
+        with 
+            signature 
+                (@bisimilar A B (CoAlgebrasf A B) (CoAlgebrasf A B) ) ==> 
+            (@bisimilar A C _ _) as comp_mor_left.
+    Proof.
+        intros x y H_equiv1 z w H_equiv2.
+        now apply bisimilar_comp.
+    Qed. *)
+
+    Add Parametric Morphism (A B C : Typ) : (@comp A B C)
+        with 
+            signature (@bisimilar A B (CoAlgebrasf A B) (CoAlgebrasf A B)) ==> 
+            (@bisimilar B C (CoAlgebrasf B C) (CoAlgebrasf B C) ) ==> 
+            (@bisimilar A C (CoAlgebrasf A C) (CoAlgebrasf A C)) as comp_mor.
+    Proof.
+        intros x y H_equiv1 z w H_equiv2.
+        now apply bisimilar_comp.
+    Qed.
+
+    Add Parametric Morphism (A B C : Typ) : (@loop A B C)
+        with signature eq ==> 
+            (@bisimilar (A * C) (B * C) _ _) ==> 
+            (@bisimilar A B _ _) as loop_mor.
+    Proof.
+        apply bisimilar_loop.
+    Qed.
 
 
+Section Congruence.
 
+    Context {A B C : Typ}.
+
+    Lemma equiv_first : 
+    forall (f g : SF A B),
+        f ≡ g -> @First _ _ C f ≡ First g.
+    Proof.
+        unfold equiv; simpl; intros.
+        rewrite H.
+        reflexivity.
+    Qed.
+
+    Lemma equiv_comp : 
+        forall (f1 f2 : SF A B) (g1 g2 : SF B C),
+            f1 ≡ f2 -> g1 ≡ g2 -> Comp f1 g1 ≡ Comp f2 g2.
+    Proof.
+    Admitted.
+
+    Lemma equiv_loop : 
+        forall (c : C) (f g : SF (A * C) (B * C)),
+            f ≡ g -> Loop c f ≡ Loop c g.
+    Proof.
+        unfold equiv; simpl; intros.
+        rewrite H.
+        reflexivity.
+    Qed.
+
+End Congruence.
+
+
+Section Equivalence.
+
+    Lemma simplify : 
+        forall (A B : Typ) (sf : SF A B),
+            exists (C : Typ) (v : C) (f : Typ (A * C) (B * C)),
+            sf ≡ Loop v (Arr f).
+    Proof.
+        intros A B sf.
+        induction sf.
+        -   exists unit. exists tt.
+            exists (fun '(a,_) => (h a, tt)).
+            admit.
+        -   destruct IHsf1 as [C1 [v1 [f1 H1]]].
+            destruct IHsf2 as [C2 [v2 [f2 H2]]].
+            exists (C1 * C2). exists (v1, v2).
+    Admitted.
+
+End Equivalence.
 
 
 
