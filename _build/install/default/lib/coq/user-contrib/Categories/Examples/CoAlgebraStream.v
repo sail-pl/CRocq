@@ -1,0 +1,1 @@
+../../../../../../../default/theories/Examples/CoAlgebraStream.v
