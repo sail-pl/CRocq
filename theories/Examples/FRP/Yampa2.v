@@ -623,21 +623,90 @@ Section ArrowProperties.
         - constructor.
     Qed.
 
+    Inductive R_bisim_eq_3a (A B C D : Typ): relation (sf A C) :=
+    R_bisim_eq_3a_ : forall (c : D) (sf1 : sf A B) (sf2 : sf (B * D) (C * D)), 
+        R_bisim_eq_3a _ _ _ _ 
+                      (loop c (comp (first sf1) sf2)) 
+                      (@comp _ _ C sf1 (loop c sf2)).
+
     Lemma arrow_eq_3a :
         forall (A B C D : Typ) (c : D) (sf1 : sf A B) (sf2 : sf (B * D) (C * D)),
             loop c (comp (first sf1) sf2) ∼ @comp _ _ C sf1 (loop c sf2).
-    Admitted.
+    Proof.
+        intros A B C D c sf1 sf2.
+        apply bisimulation_gfp with (R := R_bisim_eq_3a A B C D).
+        - intros h g H_bisim a b f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0, sf3.
+          simpl in *.
+          destruct (p a) eqn:H_res.
+          destruct (p0 (b0,c0)) eqn:H_res'.
+          destruct p1.
+          inversion H_eq; subst; clear H_eq.
+          exists (comp s (loop d s0)).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_3a_.
+        - constructor.
+    Qed. 
+
+    Inductive R_bisim_eq_3b (A B C D : Typ): relation (sf A C) :=
+    R_bisim_eq_3b_ : forall (c : D) (sf1 : sf (A * D) (B * D)) (sf2 : sf B C), 
+        R_bisim_eq_3b _ _ _ _ 
+                      (loop c (comp sf1 (first sf2))) 
+                      (comp (loop c sf1) sf2).
 
     Lemma arrow_eq_3b :
         forall (A B C D : Typ) (c : D) (sf1 : sf (A * D) (B * D)) (sf2 : sf B C),
             loop c (comp sf1 (first sf2)) ∼ comp (loop c sf1) sf2.
-    Admitted.
+    Proof.
+        intros A B C D c sf1 sf2.
+        apply bisimulation_gfp with (R := R_bisim_eq_3b A B C D).
+        - intros h g H_bisim a b f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0, sf3.
+          simpl in *.
+          destruct (p (a,c0)) eqn:H_res.
+          destruct p1.
+          destruct (p0 b0) eqn:H_res'.
+          inversion H_eq; subst; clear H_eq.
+          exists (comp (loop d s) s0).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_3b_.
+        - constructor.
+    Qed. 
+
+    Inductive R_bisim_eq_3c (A B C D : Typ): relation (sf A B) :=
+    R_bisim_eq_3c_ : forall (c : C) (d : D) (sf : sf ((A * C) * D) ((B * C) * D)), 
+        R_bisim_eq_3c _ _ _ _ 
+                      (loop c (loop d sf)) 
+                      (loop (c,d) (comp (arr unassoc) (comp sf (arr assoc)))).
 
     Lemma arrow_eq_3c :
         forall (A B C D : Typ) (sf : sf ((A * C) * D) ((B * C) * D)) (c : C) (d : D), 
         loop c (loop d sf) ∼ 
             loop (c,d) (comp (arr unassoc) (comp sf (arr assoc))).
-    Admitted.
+    Proof.
+        intros A B C D sf c d.
+        apply bisimulation_gfp with (R := R_bisim_eq_3c A B C D).
+        - intros h g H_bisim a b f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0.
+          simpl in *.
+          destruct (p ((a,c0), d0)) eqn:H_res.
+          destruct p0 as [[b' c'] d'].
+          inversion H_eq; subst; clear H_eq.
+          simpl.
+          exists (loop (c', d') (comp (arr unassoc) (comp s (arr assoc)))).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_3c_.
+        - constructor.
+    Qed.         
 
 End ArrowProperties.
 
