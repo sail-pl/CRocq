@@ -454,7 +454,7 @@ Section ArrowProperties.
     Definition unassoc {A B C : Typ} : A * (B * C) -> (A * B) * C :=
     fun '(a,(b,c)) => ((a,b),c).
     
-    Lemma arrow_eq_2a : forall (A B : Typ) (a : sf A B), 
+    Lemma arrow_eq_4a : forall (A B : Typ) (a : sf A B), 
         comp (arr (idty A)) a ∼ a.
     Proof.
         intros.
@@ -465,7 +465,7 @@ Section ArrowProperties.
         - apply csf1.
     Qed.
 
-    Lemma arrow_eq_2b : forall (A B : Typ) (a : sf A B),
+    Lemma arrow_eq_4b : forall (A B : Typ) (a : sf A B),
         comp a (arr (idty B)) ∼ a.
     Proof.
         intros.
@@ -476,7 +476,7 @@ Section ArrowProperties.
         - apply csf2.
     Qed.
 
-    Lemma arrow_eq_2c : 
+    Lemma arrow_eq_4c : 
         forall (A B C D: Typ) (sf1 : sf A B) (sf2 : sf B C) (sf3 : sf C D),
             comp (comp sf1 sf2) sf3 ∼ comp sf1 (comp sf2 sf3).
     Proof.
@@ -484,7 +484,7 @@ Section ArrowProperties.
         apply csf3.
     Qed.
 
-    Lemma arrow_eq_2d : 
+    Lemma arrow_eq_4d : 
         forall (A B C : Typ) (f : Typ A B) (g : Typ B C),
             arr (fun x => g (f x)) ∼ comp (arr f) (arr g).
     Proof.
@@ -495,35 +495,133 @@ Section ArrowProperties.
           apply ff2.
     Qed.
 
-    Lemma arrow_eq_2e :
+    Inductive R_bisim_eq_4e (A B C : Typ): relation (sf (A * C) B) :=
+        R_bisim_eq_4e_ : forall (sf : sf A B), 
+                R_bisim_eq_4e _ _ _ 
+                    (comp (@first _ _ C sf) (arr (fun '(x,y) => x)))
+                    (comp (arr (fun '(x,y) => x)) sf).
+
+    Lemma arrow_eq_4e :
         forall (A B C : Typ) (sf : sf A B),
             comp (@first _ _ C sf) (arr (fun '(x,y) => x)) ∼ 
                 comp (arr (fun '(x,y) => x)) sf.
     Proof.
-        
-    Admitted.
+        intros A B C sf.
+        apply bisimulation_gfp with (R := R_bisim_eq_4e A B C).
+        - intros f g H_bisim [a c] b h H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0.
+          simpl in *.
+          destruct (p a) eqn:H_res.
+          inversion H_eq; subst; clear H_eq.
+          exists (comp (arr (fun '(x,_) => x)) s).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_4e_.
+        - constructor.
+    Qed.
 
-    Lemma arrow_eq_2f : 
-        forall (A B : Typ) (sf : sf A B) (f : Typ A B),
+    Inductive R_bisim_eq_4f (A B C D : Typ): relation (sf (A * C) (B * D)) :=
+    R_bisim_eq_4f_ : forall (sf : sf A B) (f : Typ C D), 
+            R_bisim_eq_4f _ _ _ _ 
+                (comp (first sf) (arr (fun '(x,y) => (x, f y))))
+                (comp (arr (fun '(x,y) => (x,f y))) (first sf)).
+
+    Lemma arrow_eq_4f : 
+        forall (A B C D : Typ) (sf : sf A B) (f : Typ C D),
             comp (first sf) (arr (fun '(x,y) => (x, f y))) ∼
                 comp (arr (fun '(x,y) => (x,f y))) (first sf).
-    Admitted.
+    Proof.
+        intros A B C D sf f.
+        apply bisimulation_gfp with (R := R_bisim_eq_4f A B C D).
+        - intros h g H_bisim [a c] b f' H_eq.
+            inversion H_bisim; subst; clear H_bisim.
+            simpl in *.
+            destruct sf0.
+            simpl in *.
+            destruct (p a) eqn:H_res.
+            inversion H_eq; subst; clear H_eq.
+            exists (comp (arr (fun '(x, y) => (x, f0 y))) (first s)).
+            split.
+            -- reflexivity.
+            -- apply R_bisim_eq_4f_.
+        - constructor.
+    Qed.
 
-    Lemma arrow_eq_2g : 
+    Inductive R_bisim_eq_4g (A B C D : Typ): relation (sf (A * C * D) (B * (C* D))) :=
+    R_bisim_eq_4g_ : forall (sf : sf A B), 
+            R_bisim_eq_4g _ _ _ _ 
+                (comp (@first _ _ D (@first _ _ C sf)) (arr assoc))
+                (comp (arr assoc) (first sf)).
+
+    Lemma arrow_eq_4g : 
         forall (A B C D : Typ) (sf : sf A B),
             comp (@first _ _ D (@first _ _ C sf)) (arr assoc) ∼ 
             comp (arr assoc) (first sf).
-    Admitted.
+    Proof.
+        intros A B C D sf.
+        apply bisimulation_gfp with (R := R_bisim_eq_4g A B C D).
+        - intros h g H_bisim [[a c] d] b f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0.
+          simpl in *.
+          destruct (p a) eqn:H_res.
+          inversion H_eq; subst; clear H_eq.
+          exists (comp (arr assoc) (first s)).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_4g_.
+        - constructor.
+    Qed.        
 
-    Lemma arrow_eq_2h :     
+    Inductive R_bisim_eq_4h (A B C : Typ): relation (sf (A * C) (B * C)) :=
+    R_bisim_eq_4h_ : forall (f : Typ A B), 
+        R_bisim_eq_4h _ _ _  (@first _ _ C (arr f)) (arr (fun '(x,y) => (f x, y))).
+
+    Lemma arrow_eq_4h :     
         forall (A B C : Typ) (f : Typ A B),
         @first _ _ C (arr f) ∼ arr (fun '(x,y) => (f x, y)).
-    Admitted.
+    Proof.
+        intros A B C f.
+        apply bisimulation_gfp with (R := R_bisim_eq_4h A B C).
+        - intros h g H_bisim [a c] [b c'] f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          inversion H_eq; subst; clear H_eq.
+          exists (arr (fun '(x, y) => (f0 x, y))).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_4h_.
+        - constructor.
+    Qed.  
 
-    Lemma arrow_eq_2i : forall (A B C D : Type) (a : sf A B) (b : sf B C),
+    Inductive R_bisim_eq_4i (A B C D : Typ): relation (sf (A * D) (C * D)) :=
+    R_bisim_eq_4i_ : forall (sf1 : sf A B) (sf2 : sf B C), 
+        R_bisim_eq_4i _ _ _ _ 
+                      (@first _ _ D (comp sf1 sf2)) 
+                      (comp (first sf1) (first sf2)).
+
+    Lemma arrow_eq_4i : forall (A B C D : Type) (a : sf A B) (b : sf B C),
         @first _ _ D (comp a b) ∼ comp (first a) (first b).
     Proof.
-    Admitted.
+        intros A B C D sf1 sf2.
+        apply bisimulation_gfp with (R := R_bisim_eq_4i A B C D).
+        - intros h g H_bisim [a d] [b d'] f' H_eq.
+          inversion H_bisim; subst; clear H_bisim.
+          simpl in *.
+          destruct sf0, sf3.
+          simpl in *.
+          destruct (p a) eqn:H_res.
+          destruct (p0 b0) eqn:H_res'.
+          inversion H_eq; subst; clear H_eq.
+          exists (comp (first s) (first s0)).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_eq_4i_.
+        - constructor.
+    Qed.
 
     Lemma arrow_eq_3a :
         forall (A B C D : Typ) (c : D) (sf1 : sf A B) (sf2 : sf (B * D) (C * D)),

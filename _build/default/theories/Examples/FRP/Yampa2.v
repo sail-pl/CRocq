@@ -135,46 +135,6 @@ Section Category.
 
 End Category.
 
-Section Functor.
-
-    CoFixpoint fmap {A B : Typ} (f : A -> B) : sf A B :=
-        sf_ (fun a => (f a, fmap f)).
-
-    Inductive R_bisim_fmap_id (A : Typ) : relation (sf A A) :=
-    R_bisim_fmap_id_ : R_bisim_fmap_id _ (fmap (idty A)) (idty _).
-
-    Lemma ff1 : forall A : Typ, fmap (idty A) = idty _.
-    Proof.
-        intro A.
-        apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
-        apply bisimulation_gfp with (R := R_bisim_fmap_id A).
-        - intros f g H_bisim a b f' g'.
-          simpl in *.
-          inversion H_bisim; subst.
-          simpl in *.
-          inversion g'; subst; clear g'.
-          exists (id A).
-          split.
-          -- reflexivity.
-          -- apply R_bisim_fmap_id_.
-        - constructor.
-    Qed.
-
-    Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
-    fmap g ∘ fmap h = fmap (g ∘ h).
-    Admitted.
-
-    #[refine] Global Instance FunctorF : Functor Typ CategorySF :=
-    {
-        fobj := fun X => X;
-        fmap := @fmap
-    }.
-    - apply ff1.
-    - apply ff2.
-    Defined.    
-    
-End Functor.
-
 Section Semantics.
 
     CoFixpoint arr {A B : Typ} : (Typ A B) -> sf A B := 
@@ -194,8 +154,25 @@ Section Semantics.
             (b, loop c' f')
             end).
 
+    Inductive R_bisim_ff1 (A : Typ) : relation (sf A A) :=
+    R_bisim_ff1_ : R_bisim_ff1 _ (arr (idty A)) (idty _).
+
     Lemma ff1 : forall a : Typ, arr (idty a) = idty _.
-    Admitted.
+    Proof. 
+        intro A.
+        apply (bisimulation_extentionality A A (CoAlgebrasf A A)).
+        apply bisimulation_gfp with (R := R_bisim_ff1 A).
+        - intros f g H_bisim a b f' g'.
+            simpl in *.
+            inversion H_bisim; subst.
+            simpl in *.
+            inversion g'; subst; clear g'.
+            exists (id A).
+            split.
+            -- reflexivity.
+            -- apply R_bisim_ff1_.
+        - constructor.
+    Qed.
         
     Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
         arr g ∘ arr h = arr (g ∘ h).
