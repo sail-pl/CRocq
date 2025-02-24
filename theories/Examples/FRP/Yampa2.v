@@ -22,16 +22,10 @@ Section YampaSemanticsDomain.
     CoInductive sf (A B : Type) := 
         sf_ : (A -> B * sf A B) -> sf A B.
 
-    Arguments sf_ [A B] _.
-
-    Global Instance CoAlgebrasf (A B : Type) : CoAlgebra (FunctorProc A B) := 
-    {
-        coalgebra_obj := sf A B;
-        coalgebra_morph := fun sf => match sf with sf_ f => f end 
-    }.
+    #[global] Arguments sf_ [A B] _.
 
     Definition decompose {A B : Typ} (f : sf A B) : sf A B :=
-    match f with sf_ f => sf_ f end.
+        match f with sf_ f => sf_ f end.
 
     Lemma decompose_eq : 
         forall {A B : Typ} (f : sf A B), f = decompose f.
@@ -39,9 +33,13 @@ Section YampaSemanticsDomain.
         destruct f; reflexivity.
     Qed.
 
-End YampaSemanticsDomain.
+    #[global] Instance CoAlgebrasf (A B : Type) : CoAlgebra (FunctorProc A B) := 
+    {
+        coalgebra_obj := sf A B;
+        coalgebra_morph := fun sf => match sf with sf_ f => f end 
+    }.
 
-Arguments sf_ [A B] _.
+End YampaSemanticsDomain.
 
 Section Category.
 
@@ -54,7 +52,6 @@ Section Category.
             let (b, f') := f a in
             let (c, g') := g b in
             (c, comp f' g')).
-
 
     Inductive R (A : Type) : relation (sf A A) :=
         | R_1 : R A (id A) (sf_ (fun a => (a, id A)))
@@ -111,32 +108,10 @@ Section Category.
 
 End Category.
 
-Section Functor.
-
-    CoFixpoint fmap {A B : Typ} (f : A -> B) : sf A B :=
-        sf_ (fun a => (f a, fmap f)).
-
-    Lemma ff1 : forall a : Typ, fmap (idty a) = idty _.
-    Admitted.
-
-    Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
-    fmap g ∘ fmap h = fmap (g ∘ h).
-    Admitted.
-
-    #[refine] Global Instance FunctorF : Functor Typ CategorySF :=
-    {
-        fobj := fun X => X;
-        fmap := @fmap
-    }.
-    - apply ff1.
-    - apply ff2.
-    Defined.    
-    
-End Functor.
-
 Section Semantics.
 
-    Definition arr {A B : Typ} : (Typ A B) -> sf A B := fmap.
+    CoFixpoint arr {A B : Typ} : (Typ A B) -> sf A B := 
+        fun f => sf_ (fun a => (f a, arr f)).
 
     CoFixpoint first {A B C : Type} (f : sf A B) : sf (A * C) (B * C) :=
         match f with sf_ f =>
@@ -152,10 +127,26 @@ Section Semantics.
             (b, loop c' f')
             end).
 
+    Lemma ff1 : forall a : Typ, arr (idty a) = idty _.
+    Admitted.
+        
+    Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
+        arr g ∘ arr h = arr (g ∘ h).
+    Admitted.
+        
+    #[refine] Global Instance FunctorF : Functor Typ CategorySF :=
+    {
+        fobj := fun X => X;
+        fmap := @arr
+    }.
+    - apply ff1.
+    - apply ff2.
+    Defined.    
+
     Fixpoint sem {A B : Typ} (f : SF A B) : sf A B :=
         match f with
             | Arr h => arr h
-            | Comp f1 f2 => comp (sem f1) (sem f2)
+            | Comp f1 f2 => sem f2 ∘ sem f1 (* comp (sem f1) (sem f2) *)
             | First f => first (sem f)
             | Loop c f => loop c (sem f)
         end.
