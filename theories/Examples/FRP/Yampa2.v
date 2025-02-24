@@ -173,10 +173,28 @@ Section Semantics.
             -- apply R_bisim_ff1_.
         - constructor.
     Qed.
-        
-    Lemma ff2 : forall (a b c : Typ) (g : Typ b c) (h : Typ a b),
+
+    Inductive R_bisim_ff2 (A B C : Typ) : relation (sf A C) :=
+    R_bisim_ff2_ : forall (f : Typ A B) (g : Typ B C), 
+        R_bisim_ff2 _ _ _ (arr g ∘ arr f) (arr (g ∘ f)).
+
+    Lemma ff2 : forall (A B C : Typ) (g : Typ B C) (h : Typ A B),
         arr g ∘ arr h = arr (g ∘ h).
-    Admitted.
+    Proof.
+        intros A B C g h.
+        apply (bisimulation_extentionality A C (CoAlgebrasf A C)).
+        apply bisimulation_gfp with (R := R_bisim_ff2 A B C).
+        - intros f1 f2 H_bisim a b f1' H_eq.
+          simpl in *.
+          inversion H_bisim; subst.
+          simpl in *.
+          inversion H_eq; subst; clear H_eq.
+          exists (arr (fun x : A => g0 (f x))).
+          split.
+          -- reflexivity.
+          -- apply R_bisim_ff2_.
+        - constructor.
+    Qed.
         
     #[refine] Global Instance FunctorF : Functor Typ CategorySF :=
     {
