@@ -17,6 +17,9 @@ Class Monad  :=
         bind (bind m f) g = bind m (fun x => bind (f x) g)
 }.
 
+Notation  "t1 '>>=' t2"    := (bind t1 t2) (at level 42, left associativity).
+
+
 Coercion M : Monad >-> Functor.
 
 #[refine] Instance Klesli (M : Monad) : Category := 
