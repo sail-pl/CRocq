@@ -8,6 +8,11 @@ From Coq.Arith Require Import PeanoNat.
 
 Open Scope type_scope.
 
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Lists.List.
+Require Import Coq.Bool.Bool.
+Axiom ltb : nat -> nat -> bool.
+
 Notation  "t1 '>>=' t2" := (bind t1 t2) (at level 42, left associativity).
 (* Notation  "t1 '>>-' t2"  := (bind t1 (fun x => t2)) (at level 42, left associativity). *)
 
@@ -160,25 +165,117 @@ Definition mset {A : Type} (r : ref A) (a : A) : St unit :=
 
 Section st_eq.
 
+    Definition is_internal {A : Type} (r : ref A) (σ : Memory) := 
+        match σ (id_of_ref r) with
+        | Some (Cell_ (Internal _) _) => True
+        | _ => False
+        end.
+
+    Lemma read_internal_defined :
+        forall (A : Type) (r : ref A) σ,
+        is_internal r σ -> read A r σ <> None.
+    Admitted.
+
+    Lemma read_read : 
+    forall (A : Type) (r : ref A) σ (a : A) σ',
+        is_internal r σ ->
+        read A r σ = Some (a, σ') -> σ = σ'.
+    Admitted.
+
+    Lemma read_write : forall (A : Type) (r : ref A) σ (a : A) σ',
+    is_internal r σ ->
+    read A r σ = Some (a, σ') ->
+        write A r σ' a = Some σ.
+    Admitted.
+
+
+    Lemma write_read : 
+        forall (A : Type) (r : ref A) σ (a : A) σ',
+        write A r σ a = Some σ' -> read A r σ' = Some (a, σ').
+    Admitted. 
+
     Variables (A : Type).
     Variables (r : ref A).
     Variables (x y : A).
+    Variable (σ : Memory).
 
+    (* internal *)
     Lemma st_get_get_eq : 
-        mget r >>= (fun _ => mget r) = mget r.
-    Admitted.
-
+        is_internal r σ ->
+        (mget r >>= (fun _ => mget r)) σ = mget r σ.
+    Proof.
+        intro.
+        unfold mget; simpl.
+        unfold bind_st; simpl.
+        destruct (read A r σ) as [[a σ''] | ] eqn:Heq. 
+        -   now replace σ'' with σ in * by now
+                (apply read_read in Heq).
+        -   reflexivity.
+    Qed.
+    
     Lemma st_get_set_eq : 
-            mget r >>= (fun _ => mset r x) = ret tt.
-    Admitted.
+        is_internal r σ ->
+            (mget r >>= (mset r)) σ = ret tt σ.
+    Proof.
+        intro.
+        unfold mget, mset; simpl.
+        unfold bind_st, ret_st; simpl.
+        destruct (read A r σ) as [[a σ'] | ] eqn:Heq. 
+        -   destruct (write A r σ' a) as [σ'' | ] eqn:Heq'; simpl.
+            +   do 2 f_equal.
+                rewrite read_write with (σ := σ) in Heq'. 
+                injection Heq'; intros; subst.
+                reflexivity.
+                assumption.
+                assumption.
+            +   rewrite read_write with (σ := σ) in Heq'.
+                discriminate.
+                assumption.
+                assumption. 
+        -   apply read_internal_defined in H.
+            contradiction.
+    Qed.
 
     Lemma st_set_get_eq : 
+        is_internal r σ ->
         mset r x >>= (fun tt => mget r) = mset r x >>= (fun tt => ret x).
-    Admitted.
+    Proof.
+        intro.
+        unfold mset, mget; simpl.
+        unfold bind_st, ret_st; simpl.
+        apply functional_extensionality; intro m.
+        destruct (write A r m x) as [σ' | ] eqn:Heq; simpl.
+        apply write_read in Heq.
+        assumption.
+        reflexivity.
+    Qed.
 
     Lemma st_set_set_eq : 
+        is_internal r σ ->
         mset r x >>= (fun tt => mset r y) = mset r y.
+    Proof.
+        intro.
+        unfold mset; simpl.
+        unfold bind_st; simpl.
+        apply functional_extensionality; intro m; simpl.
+        destruct (write A r m x) as [σ' | ] eqn:Heq; simpl.
     Admitted.
+
+    Lemma st_get_eq : 
+        is_internal r σ ->
+        (mget r >>= (fun _ => ret x)) σ = ret x σ.
+    Proof.
+        intro.
+        unfold mget, ret_st; simpl.
+        unfold bind_st; simpl.
+        destruct (read A r σ) as [[a σ'] | ] eqn:Heq.
+        -   apply read_read in Heq.
+            subst.
+            reflexivity.
+            assumption.
+        -   apply read_internal_defined in H.
+            contradiction.
+    Qed.
 
 End st_eq.
 
@@ -267,15 +364,6 @@ Fixpoint build (l : list Type) : Type :=
     | nil => unit
     | cons A l => A * build l
     end.
-
-
-Open Scope nat_scope.
-
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Axiom ltb : nat -> nat -> bool.
-
 
 Definition k (p : Program) := List.length (internals p).
 Definition k_in (p : Program) := List.length (inputs p).
