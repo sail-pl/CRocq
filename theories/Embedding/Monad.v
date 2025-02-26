@@ -1,3 +1,4 @@
+From Coq.Logic Require Import FunctionalExtensionality.
 Require Import Categories.Category.Category.
 Require Import Categories.Category.Functor.
 Require Import Categories.Embedding.CategoryType.
@@ -28,4 +29,16 @@ Coercion M : Monad >-> Functor.
         fun (x : a) => bind (f x) g
 }.
 Proof.
-Admitted.    
+    - intros a b f.
+      apply functional_extensionality.
+      intro x.
+      apply monad_prop1.
+    - intros a b f.
+      apply functional_extensionality.
+      intro x.
+      apply monad_prop2.
+    - intros.
+      apply functional_extensionality.
+      intro x.
+      apply monad_prop3.
+Defined.    
