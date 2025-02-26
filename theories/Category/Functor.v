@@ -22,6 +22,6 @@ Class Functor (C : Category) (D : Category) : Type := {
       forall (g : C b c) (h : C a b),
         (fmap g ∘ fmap h) = fmap (g ∘ h) }.
 
-Arguments fmap { _ _ } Functor { _ _ }.
+#[global] Arguments fmap { _ _ } Functor { _ _ }.
 
 Coercion fobj : Functor >-> Funclass.
