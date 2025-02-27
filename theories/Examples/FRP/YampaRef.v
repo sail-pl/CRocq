@@ -107,12 +107,32 @@ Definition fmap_St {A B : Type} (f : Typ A B) : St A -> St B  :=
 Check (fmap FunctorOption).
 
 Lemma functor_prop1 : forall A : Type, fmap_St (idty A) = idty (St A).
-Admitted.
+Proof.
+    intro A.
+    unfold fmap_St.
+    extensionality a.
+    extensionality m.
+    simpl.
+    unfold fmap_option.
+    destruct (a m) eqn:H_some; auto.
+    f_equal.
+    unfold fmap_productLeft.
+    destruct p; simpl.
+    reflexivity.
+Qed.
 
 Lemma functor_prop2 :
 forall (A B C : Type) (g : B -> C) (h : A -> B),
     fmap_St g ∘ fmap_St h = fmap_St (g ∘ h).
-Admitted.
+Proof.
+    intros A B C g h.
+    simpl.
+    extensionality a.
+    unfold fmap_St.
+    extensionality m.
+    simpl.
+    destruct (a m) eqn:H_some; auto.
+Qed.
 
 #[refine] Instance Functor_St : Functor Typ Typ := 
 {
@@ -315,6 +335,7 @@ End st_neq.
 Lemma monad_get_ignore : 
     forall (A : Typ) (r : ref A) (x : A),
     mget r >>= (fun _ => ret x) = ret x.
+Proof. Admitted.
 
 Definition rsf (A B : Type) := A -> St B.
 
