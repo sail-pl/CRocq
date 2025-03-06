@@ -22,6 +22,7 @@ Open Scope category_scope.
 Reserved Infix "∘" (at level 42, left associativity).
 
 Class Category : Type := {
+    (* carrier T, obj T *)
     obj : Type;
     hom : obj -> obj -> Type;
     idty (a : obj) : hom a a;
@@ -61,7 +62,7 @@ Coercion initial_obj : initial >-> obj.
 (** A _terminal object_ of a category [C] is a an object [a] with 
     a unique morphism from all objects of the category. *)
 
-Class terminal {C : Category} : Type := 
+Class terminal (C : Category) : Type := 
 {
     terminal_obj : C;
     terminal_morph (a : C) : C a terminal_obj;
@@ -179,7 +180,7 @@ Coercion exponential_obj : Exponential >-> obj.
 
 Class CartesianClosed (C:Category) : Type := {
     CartesianClosed_Cartesian :: Cartesian C;
-    term : terminal ;
+    term : terminal C;
     exp : forall a b, Exponential a b
 }.
 

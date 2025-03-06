@@ -11,7 +11,7 @@ Class CoAlgebra {C : Category} (F : Functor C C) : Type := {
 Arguments coalgebra_obj {C F} _.
 Arguments coalgebra_morph {C F} _.
 
-Class CoAlgebraMorphism {C : Category} {F : Functor C C} 
+Class CoAlgebraMorphism {C : Category} (F : Functor C C)
     (A B : CoAlgebra F) : Type := 
     {
         coalgebramorphism_morph : 

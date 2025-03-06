@@ -49,7 +49,7 @@ Instance CartesianType  : Cartesian Typ := {}.
 
 (** Cartesian Closed Category *)
 
-#[refine] Instance singleton_terminal : terminal := 
+#[refine] Instance singleton_terminal : terminal Typ := 
 {
     terminal_obj := unit;
     terminal_morph := fun _ _ => tt
@@ -139,10 +139,10 @@ Defined.
 
 (** Pairs *)
 
-Definition fmap_product {A B C : Type} 
-    (f : B -> C) (p : A * B) : A * C := (fst p, f (snd p)).
+(* Definition fmap_rproduct {A B C : Type} 
+    (f : B -> C) (p : A * B) : A * C := (fst p, f (snd p)). *)
 
-#[refine] Instance FunctorProduct (A : Type): Functor Typ Typ :=
+#[refine] Instance FRProduct (A : Type): Functor Typ Typ :=
 {
     fobj := fun B => A * B;
     fmap := fun B C f (p : A * B) => 

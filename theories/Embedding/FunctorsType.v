@@ -23,7 +23,7 @@ Defined.
 Definition fmap_product {A B C : Type} 
     (f : B -> C) (p : A * B) : A * C := (fst p, f (snd p)).
 
-#[refine] Instance FunctorProduct (A : Type): Functor Typ Typ :=
+#[refine] Instance FProduct (A : Type): Functor Typ Typ :=
 {
     fobj := fun B => A * B;
     fmap := fun B C f (p : A * B) => 

@@ -1,1 +1,2 @@
 -R _build/default/theories Categories
+-R _build/default/examples Examples
