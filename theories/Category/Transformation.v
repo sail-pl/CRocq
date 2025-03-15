@@ -1,4 +1,5 @@
 From Coq.Logic Require Import ProofIrrelevance.
+From Coq.Logic Require Import FunctionalExtensionality.
 
 From Categories.Category Require Import Category Functor.
 
@@ -7,52 +8,93 @@ From Categories.Category Require Import Category Functor.
   categories [C] and [D] is a mapping from each object [a:C] to a a morphism
   [transform a : D (F a) (G a)] *)
 
-Record NaturalTransformation {C D : Category} (F G : Functor C D) : Type := {
-transform (a : C) : D (F a) (G a);
-transform_spec : forall (a b : C) (f : C a b),
-    (fmap G f) ∘ (transform a) = (transform b)∘ (fmap F f) }.
+Section Category.
 
-Coercion transform : NaturalTransformation >-> Funclass.
+    Context {C D : Category}.
 
-Definition nf_idty {C D : Category} (F : Functor C D) : NaturalTransformation F F.
-refine ({| transform := fun (c : C) => idty (F c) ; transform_spec := _ |}).
-Proof.
-    intros a b f.
-    rewrite compose_left_idty.
-    rewrite compose_right_idty.
-    reflexivity. 
-Qed.
+    Record Transformation (F G : Functor C D) : Type := {
+        transform (a : C) : D (F a) (G a);
+        transform_spec : forall (a b : C) (f : C a b),
+            (fmap G f) ∘ (transform a) = 
+                (transform b)∘ (fmap F f) }.
 
-Definition nf_compose {C D : Category} (F G H : Functor C D)
-    (N : NaturalTransformation G H) (M : NaturalTransformation F G) : 
-        NaturalTransformation F H.
-    refine {| 
-        transform := fun (c : C) => N c ∘ M c
-    ; transform_spec := _ |}.
-Proof.
-    intros a b f.
-    destruct N, M; simpl.
-    rewrite compose_assoc.
-    rewrite transform_spec0.
-    rewrite <- compose_assoc.
-    rewrite transform_spec1.
-    rewrite <- compose_assoc.
-    reflexivity.
-Defined.
+    Coercion transform : Transformation >-> Funclass.
 
-Lemma a : forall (C D : Category) (F G : Functor C D) (f : NaturalTransformation F G), 
-    nf_compose F F G f (nf_idty F) = f.
-Proof.
-Admitted. 
+    Definition nf_idty (F : Functor C D) : Transformation F F.
+        refine ({| 
+            transform := fun (c : C) => id (F c) ; 
+            transform_spec := _ |}).
+    Proof.
+        intros a b f.
+        rewrite cat_left_idty.
+        rewrite cat_right_idty.
+        reflexivity. 
+    Defined.
 
-Lemma b : forall (C D : Category) (F G : Functor C D) (f : NaturalTransformation F G),
+    Definition nf_compose (F G H : Functor C D)
+        (N : Transformation G H) (M : Transformation F G) : 
+            Transformation F H.
+        refine {| 
+            transform := fun (c : C) => N c ∘ M c;
+            transform_spec := _ |}.
+    Proof.
+        intros a b f.
+        destruct N, M; simpl.
+        rewrite cat_assoc.
+        rewrite transform_spec0.
+        rewrite <- cat_assoc.
+        rewrite transform_spec1.
+        rewrite <- cat_assoc.
+        reflexivity.
+    Defined.
+
+    Lemma transform_eq : 
+        forall (F G : Functor C D) (f f' : Transformation F G),
+            transform F G f = transform F G f' -> f = f'.
+    Admitted.
+
+    Require Import Setoid.
+    Lemma a : forall (F G : Functor C D) (f : Transformation F G), 
+        nf_compose F F G f (nf_idty F) = f.
+    Proof.
+        intros F G f.
+        destruct f; simpl.
+        unfold nf_compose, nf_idty; simpl.
+        assert ((fun c => transform0 c ∘ id (F c)) = transform0).
+        {
+            simpl.
+            assert ((fun c => transform0 c ∘ id (F c)) = fun c => transform0 c).
+            {
+                apply functional_extensionality_dep.
+                intro c.
+                rewrite cat_left_idty.
+                reflexivity.
+            }
+            rewrite H.
+            reflexivity.
+        }
+        apply transform_eq.
+        apply H.
+    Qed.
+    
+
+        (* set (f := fun c : C => transform0 c ∘ id (F c)).
+        revert transform_spec0.
+        rewrite <- H.  *)
+
+        (* revert transform_spec0.
+        rewrite <- H.  *
+        apply proof_irrelevance. *)
+    Admitted. 
+
+Lemma b : forall (C D : Category) (F G : Functor C D) (f : Transformation F G),
 nf_compose F G G (nf_idty G) f = f.
 Proof.
 Admitted.
 
 Lemma c : forall (C D: Category) (F G H I : Functor C D) 
-    (f : NaturalTransformation F G) (g : NaturalTransformation G H)
-    (h : NaturalTransformation H I),
+    (f : Transformation F G) (g : Transformation G H)
+    (h : Transformation H I),
     nf_compose _ _ _ h
     (nf_compose _ _ _ g f) =
     nf_compose _ _ _ 
@@ -60,11 +102,10 @@ Lemma c : forall (C D: Category) (F G H I : Functor C D)
 Proof.
 Admitted.
 
-
 #[refine, export] Instance CategoryFunctor (C D : Category) : Category := {
     obj := Functor C D;
-    hom := NaturalTransformation;
-    idty := nf_idty;
+    hom := Transformation;
+    id := nf_idty;
     compose := nf_compose
 }.
 Proof.

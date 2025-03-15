@@ -7,11 +7,11 @@ From Categories.Algebra Require Import Algebra.
 
 Definition aid {C : Category} (F : Functor C C) 
     (a : Algebra F): AlgebraMorphism a a.
-    refine ({|f := idty _ |}).
+    refine ({|f := id _ |}).
 Proof.
-    rewrite functors_preserve_identities.
-    rewrite compose_left_idty.
-    rewrite compose_right_idty.
+    rewrite funct_preserves_identities.
+    rewrite cat_left_idty.
+    rewrite cat_right_idty.
     reflexivity.
 Defined.
 
@@ -20,14 +20,14 @@ Definition acompose {C : Category} (F : Functor C C)
         AlgebraMorphism b c -> AlgebraMorphism a b -> AlgebraMorphism a c.
     intros.
         refine ({|f:=compose X X0 |}).
-        rewrite <- functors_preserve_composition.
+        rewrite <- funct_preserves_composition.
         destruct X, X0.
         simpl.
-        rewrite compose_assoc.
+        rewrite cat_assoc.
         rewrite H_f.
-        rewrite <- compose_assoc.
+        rewrite <- cat_assoc.
         rewrite H_f0.
-        rewrite compose_assoc.
+        rewrite cat_assoc.
         reflexivity.
     Defined.
 
@@ -54,7 +54,7 @@ Admitted.
 {
     obj := Algebra F;
     hom := AlgebraMorphism;
-    idty := aid F;
+    id := aid F;
     compose := acompose F
 }.
 

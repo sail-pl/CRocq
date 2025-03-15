@@ -16,9 +16,9 @@ From Categories.Category Require Import Category.
 Class Functor (C : Category) (D : Category) : Type := {
   fobj : C -> D;
   fmap {a b : C} : C a b -> D (fobj a) (fobj b);
-  functors_preserve_identities {a : C} : 
-    fmap (idty a) = idty (fobj a);
-  functors_preserve_composition {a b c : C} : 
+  funct_preserves_identities {a : C} : 
+    fmap (id a) = id (fobj a);
+  funct_preserves_composition {a b c : C} : 
       forall (g : C b c) (h : C a b),
         (fmap g ∘ fmap h) = fmap (g ∘ h) }.
 

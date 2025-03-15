@@ -1,4 +1,3 @@
-
 From Coq.Logic Require Import FunctionalExtensionality.
 From Categories.Category Require Import Category Functor.
 
@@ -10,7 +9,7 @@ Open Scope type_scope.
     {
         obj := Type;
         hom := fun A B => A -> B;
-        idty := fun (A : Type) (x : A) => x;
+        id := fun (A : Type) (x : A) => x;
         compose := fun (A B C : Type) (g : B -> C) (f : A -> B) x => g (f x)  
     }.
 Proof.
@@ -24,12 +23,12 @@ Defined.
 
 (** Cartesian category *)
 
-#[refine] Instance prodProduct (a b : Type) : product a b := 
+#[refine] Instance prodProduct (a b : Type) : Product a b := 
     {
-        product_obj := a * b;
+        prod_obj := a * b;
         π₁ := fst;
         π₂ := snd;
-        product_morph := fun c f g (x : c) => (f x, g x)
+        prod_morph := fun c f g (x : c) => (f x, g x)
     }.
 Proof.
     -   intros c f g.
@@ -49,10 +48,10 @@ Instance CartesianType  : Cartesian Typ := {}.
 
 (** Cartesian Closed Category *)
 
-#[refine] Instance singleton_terminal : terminal Typ := 
+#[refine] Instance singleton_terminal : Terminal Typ := 
 {
-    terminal_obj := unit;
-    terminal_morph := fun _ _ => tt
+    term_obj := unit;
+    term_morph := fun _ _ => tt
 }.
 Proof.
     intros h f.
@@ -64,8 +63,8 @@ Defined.
 
 #[refine] Instance ExponentialType (a b : obj) : Exponential a b := 
 {
-    exponential_obj := a -> b;
-    exponential_morph := fun p => (fst p) (snd p)
+    exp_obj := a -> b;
+    exp_morph := fun p => (fst p) (snd p)
 }.
 Proof.
     intros.
@@ -85,10 +84,10 @@ Instance CartesianClosedType : CartesianClosed Typ := {}.
 
 (** Bicartesian closed category *)
 
-#[refine] Instance empty_initial : initial :=
+#[refine] Instance empty_initial : Initial Typ :=
 {
-    initial_obj := Empty_set;
-    initial_morph := 
+    init_obj := Empty_set;
+    init_morph := 
         fun b => fun (x : Empty_set) => match x with end 
 }.
 Proof.
@@ -97,12 +96,12 @@ Proof.
     destruct x.
 Defined.
 
-#[refine] Instance sumCoproduct (a b : Type) : coproduct a b := 
+#[refine] Instance sumCoproduct (a b : Type) : Coproduct a b := 
     {
-        co_product_obj := sum a b;
+        coprod_obj := sum a b;
         ι₁ := inl;
         ι₂ := inr;
-        coproduct_morph := fun c f g (x : a + b) => 
+        coprod_morph := fun c f g (x : a + b) => 
             match x with 
                 | inl y => f y 
                 | inr y => g y 
@@ -128,8 +127,8 @@ Instance BiCartesianClosedType : BiCartesianClosed Typ :={}.
     fobj := fun _ => A;
     fmap := fun B C f p => p
 }.
+-   intro a.
 Proof.
-    -   intro a.
         apply functional_extensionality.
         reflexivity.
     -   intros.

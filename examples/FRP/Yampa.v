@@ -82,7 +82,7 @@ Section YampaSemantics.
             {
                 obj := Typ;
                 hom := sf;
-                idty := @id;
+                id := @id;
                 compose := fun _ _ _ x y => comp y x
             }.
             Admitted.

@@ -65,10 +65,10 @@ Section CoAlgebra.
     Admitted.
 
     #[refine] Instance TerminalCoRec 
-        : terminal (CoAlgebraCat FCorec) := 
+        : Terminal (CoAlgebraCat FCorec) := 
     {
-        terminal_obj := CoAlgebrasf;
-        terminal_morph := G
+        term_obj := CoAlgebrasf;
+        term_morph := G
     }.
     Proof.
     Admitted.

@@ -21,15 +21,15 @@ Defined.
     fmap := fun (a b : C) (f : C a b) => fmap G (fmap F f) }.
 Proof.
     -   intros.
-        do 2 rewrite functors_preserve_identities; reflexivity.
+        do 2 rewrite funct_preserves_identities; reflexivity.
     -   intros.
-        do 2 rewrite functors_preserve_composition; reflexivity.
+        do 2 rewrite funct_preserves_composition; reflexivity.
 Defined.
 
 #[refine] Instance Cat : Category := {
     obj := Category;
     hom := Functor;
-    idty := FunctorId;
+    id := FunctorId;
     compose := FunctorComp }.
 Proof.
     - destruct f.

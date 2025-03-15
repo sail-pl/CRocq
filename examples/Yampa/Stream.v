@@ -122,10 +122,10 @@ Section CoAlgebra.
 
 
     #[refine] Instance TerminalCoRec 
-        : terminal (CoAlgebraCat Fₛ) := 
+        : Terminal (CoAlgebraCat Fₛ) := 
     {
-        terminal_obj := CoAlgebraStream;
-        terminal_morph := G 
+        term_obj := CoAlgebraStream;
+        term_morph := G 
     }.
     Proof.
         intros a h.

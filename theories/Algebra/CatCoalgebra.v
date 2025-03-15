@@ -11,10 +11,10 @@ Section Category.
 
     Definition id_ca {F : Functor C C} (f : CoAlgebra F) : CoAlgebraMorphism F f f.
     Proof.
-        refine ({|coalgebramorphism_morph := idty (coalgebra_obj f)|}).
-        rewrite functors_preserve_identities.
-        rewrite compose_left_idty.
-        rewrite compose_right_idty.
+        refine ({|coalgebramorphism_morph := id (coalgebra_obj f)|}).
+        rewrite funct_preserves_identities.
+        rewrite cat_left_idty.
+        rewrite cat_right_idty.
         reflexivity.
     Defined.
 
@@ -23,14 +23,14 @@ Section Category.
     Proof.
         intros .
         refine ({|coalgebramorphism_morph := compose X X0 |}).
-        rewrite <- functors_preserve_composition.
+        rewrite <- funct_preserves_composition.
         destruct X, X0.
         simpl.
-        rewrite compose_assoc.
+        rewrite cat_assoc.
         rewrite <- H_f.
-        rewrite <- compose_assoc.
+        rewrite <- cat_assoc.
         rewrite H_f0.
-        rewrite compose_assoc.
+        rewrite cat_assoc.
         reflexivity.
     Defined.
 
@@ -58,7 +58,7 @@ Section Category.
 {
     obj := CoAlgebra F;
     hom := CoAlgebraMorphism F;
-    idty := id_ca ;
+    id := id_ca ;
     compose := compose_ca
 }.
 Proof.

@@ -27,7 +27,7 @@ Coercion M : Monad >-> Functor.
 {
     obj := Typ;
     hom := fun a b => a -> M b;
-    idty := fun a => ret;
+    id := fun a => ret;
     compose := fun (a b c : Typ) (g : b -> M c) (f : a -> M b) => 
         fun (x : a) => bind (f x) g
 }.

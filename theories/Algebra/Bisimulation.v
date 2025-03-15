@@ -6,7 +6,7 @@ From Categories.Algebra Require Import Coalgebra CatCoalgebra.
 Class bisimulation {C : Category} {H : Cartesian C} {F : Functor C C} (A B : CoAlgebra F): Type := 
 {
     R : CoAlgebra F;
-    f : monic (coalgebra_obj R) ((coalgebra_obj A) ⊗ (coalgebra_obj B));
+    f : Monic (coalgebra_obj R) ((coalgebra_obj A) ⊗ (coalgebra_obj B));
     proj1_spec : 
         (coalgebra_morph A) ∘ (π₁ ∘ f) 
             = (fmap F (π₁ ∘ f)) ∘ (coalgebra_morph R);

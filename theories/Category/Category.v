@@ -22,17 +22,16 @@ Open Scope category_scope.
 Reserved Infix "∘" (at level 42, left associativity).
 
 Class Category : Type := {
-    (* carrier T, obj T *)
     obj : Type;
     hom : obj -> obj -> Type;
-    idty (a : obj) : hom a a;
+    id (a : obj) : hom a a;
     compose {a b c : obj} :  hom b c -> hom a b ->  hom a c
         where " g ∘ f " := (compose g f);
-    compose_left_idty (a b : obj) : 
-        forall (f : hom a b), f ∘ (idty a) = f;
-    compose_right_idty (a b :obj) : 
-        forall (f : hom a b), (idty b) ∘ f = f;
-    compose_assoc (a b c d : obj) : 
+    cat_left_idty (a b : obj) : 
+        forall (f : hom a b), f ∘ (id a) = f;
+    cat_right_idty (a b :obj) : 
+        forall (f : hom a b), (id b) ∘ f = f;
+    cat_assoc (a b c d : obj) : 
         forall (f : hom a b) (g : hom b c) (h : hom c d),
             h ∘ (g ∘ f) = (h ∘ g) ∘ f }.
 
@@ -47,14 +46,14 @@ Infix "∘" := compose (at level 42, left associativity) : category_scope.
 (** An _initial object_ of a category [C] is a an object [a] with 
     a unique morphism to all objects of the category. *)
 
-Class initial {C : Category} : Type := {
-    initial_obj : C;
-    initial_morph (a : C) : C initial_obj a;
-    initial_morph_spec (a : C) (h' : C initial_obj a) : 
-            h' = initial_morph a
+Class Initial (C : Category) : Type := {
+    init_obj : C;
+    init_morph (a : C) : C init_obj a;
+    init_spec (a : C) (h' : C init_obj a) : 
+            h' = init_morph a
 }.
 
-Coercion initial_obj : initial >-> obj.
+Coercion init_obj : Initial >-> obj.
 
 (*****************************************************************************)
 (** ** Terminal object *)
@@ -62,15 +61,15 @@ Coercion initial_obj : initial >-> obj.
 (** A _terminal object_ of a category [C] is a an object [a] with 
     a unique morphism from all objects of the category. *)
 
-Class terminal (C : Category) : Type := 
+Class Terminal (C : Category) : Type := 
 {
-    terminal_obj : C;
-    terminal_morph (a : C) : C a terminal_obj;
-    terminal_morph_spec (a : C) (h' : C a terminal_obj) :
-        h' = terminal_morph a
+    term_obj : C;
+    term_morph (a : C) : C a term_obj;
+    term_spec (a : C) (h' : C a term_obj) :
+        h' = term_morph a
 }.
 
-Coercion terminal_obj : terminal >-> obj.
+Coercion term_obj : Terminal >-> obj.
 
 (*****************************************************************************)
 (** ** Product object *)
@@ -85,23 +84,23 @@ Coercion terminal_obj : terminal >-> obj.
 
 Reserved Notation "⟨ F , G ⟩" (at level 0, no associativity).
 
-Class product  {C : Category} (a b : C) : Type := {
-    product_obj : C;
-    π₁ : C product_obj a;
-    π₂ : C product_obj b;
-    product_morph (x : C) : C x a -> C x b -> C x product_obj
-        where "⟨ F , G ⟩" := (product_morph _ F G);
-    product_morph_spec1 : forall (c : C) (f : C c a) (g : C c b),
+Class Product  {C : Category} (a b : C) : Type := {
+    prod_obj : C;
+    π₁ : C prod_obj a;
+    π₂ : C prod_obj b;
+    prod_morph (x : C) : C x a -> C x b -> C x prod_obj
+        where "⟨ F , G ⟩" := (prod_morph _ F G);
+    prod_spec1 : forall (c : C) (f : C c a) (g : C c b),
             f = π₁ ∘ ⟨ f, g ⟩ /\ g = π₂ ∘ ⟨ f, g ⟩;
-    product_morph_spec2 (c : C) : 
-        forall (f : C c a) (g : C c b) (h : C c product_obj),
+    prod_spec2 (c : C) : 
+        forall (f : C c a) (g : C c b) (h : C c prod_obj),
             f = π₁ ∘ h /\ g = π₂ ∘ h -> h = ⟨ f,  g ⟩ }.
     
-Arguments product_morph {C a b _}. 
+Arguments prod_morph {C a b _}. 
 
-Coercion product_obj : product >-> obj.
+Coercion prod_obj : Product >-> obj.
 
-Notation "⟨ F , G ⟩" := (product_morph _ F G) (at level 0, no associativity).
+Notation "⟨ F , G ⟩" := (prod_morph _ F G) (at level 0, no associativity).
 
 (*****************************************************************************)
 (** ** Coproduct object *)
@@ -116,21 +115,21 @@ Notation "⟨ F , G ⟩" := (product_morph _ F G) (at level 0, no associativity)
 
 Reserved Notation "[ F , G ]" (at level 0, no associativity).
 
-Class coproduct `{C : Category} (a b : obj) : Type := {
-    co_product_obj : C;
-    ι₁ : C a co_product_obj;
-    ι₂ : C b co_product_obj;
-    coproduct_morph (c : C) : C a c -> C b c -> C co_product_obj c
-        where "[ F , G ]" := (coproduct_morph _ F G);
-    coproduct_morph_spec1 : forall (c : C) (f : C a c) (g : C b c),
+Class Coproduct `{C : Category} (a b : obj) : Type := {
+    coprod_obj : C;
+    ι₁ : C a coprod_obj;
+    ι₂ : C b coprod_obj;
+    coprod_morph (c : C) : C a c -> C b c -> C coprod_obj c
+        where "[ F , G ]" := (coprod_morph _ F G);
+    coprod_spec1 : forall (c : C) (f : C a c) (g : C b c),
             f = [ f, g ] ∘ ι₁ /\ g = [ f, g ] ∘ ι₂;
-    coprodict_morph_spec2 : forall (c : C) (f : C a c) (g : C b c) 
-        (h : C co_product_obj c),
+    coprod_spec2 : forall (c : C) (f : C a c) (g : C b c) 
+        (h : C coprod_obj c),
             f = h ∘ ι₁ /\ g = h ∘ ι₂ -> [ f, g ] = h }.
 
-Arguments coproduct_morph {C a b _}. 
+Arguments coprod_morph {C a b _}. 
 
-Notation "[ F , G ]" := (coproduct_morph _ F G) (at level 0, no associativity).
+Notation "[ F , G ]" := (coprod_morph _ F G) (at level 0, no associativity).
     
 (*****************************************************************************)
 (** ** Cartesian Category *)
@@ -139,10 +138,10 @@ Notation "[ F , G ]" := (coproduct_morph _ F G) (at level 0, no associativity).
     product [a ⊗ b] for all all pair of objects [a] and [b] *)
 
 Class Cartesian (C : Category) : Type := {
-    prod : forall (a b : C), product a b 
+    product : forall (a b : C), Product a b 
 }.
 
-Infix "⊗" := prod 
+Infix "⊗" := product 
     (at level 41, right associativity) : category_scope.
 
 Definition product_hom {C : Category} {H : @Cartesian C} : 
@@ -162,15 +161,15 @@ Infix "⨂" := product_hom
 
 Class Exponential {C : Category} {H : Cartesian C} (a b : C) : Type :=
 {
-    exponential_obj : C;
-    exponential_morph : C (exponential_obj ⊗ a) b;
-    exponential_morph_spec : 
+    exp_obj : C;
+    exp_morph : C (exp_obj ⊗ a) b;
+    exp_spec : 
         forall (c : C) (g : C (c ⊗ a) b),
-            exists! (curry_g : C c exponential_obj),
-                g = exponential_morph ∘ (curry_g ⨂ (idty _ ))
+            exists! (curry_g : C c exp_obj),
+                g = exp_morph ∘ (curry_g ⨂ (id _ ))
 }.
 
-Coercion exponential_obj : Exponential >-> obj.
+Coercion exp_obj : Exponential >-> obj.
 (*******************************************************************)
 (** ** Cartesian Closed Category *)
 (*******************************************************************)
@@ -180,14 +179,9 @@ Coercion exponential_obj : Exponential >-> obj.
 
 Class CartesianClosed (C:Category) : Type := {
     CartesianClosed_Cartesian :: Cartesian C;
-    term : terminal C;
+    term : Terminal C;
     exp : forall a b, Exponential a b
 }.
-
-(* Class CartesianClosed (C:Category) {H :@Cartesian C} : Type := {
-    term : terminal ;
-    exp : forall a b, Exponential a b
-}. *)
 
 (*******************************************************************)
 (** ** BiCartesian Closed Category *)
@@ -198,35 +192,30 @@ Class CartesianClosed (C:Category) : Type := {
 
 Class BiCartesianClosed (C : Category) : Type := {
     BiCartesianClosed_CartesianClosed :: CartesianClosed C;
-    init : initial;
-    coprod : forall a b, coproduct a b
+    init : Initial C;
+    coproduct : forall a b, Coproduct a b
 }.
 
-Infix "⊕" := coprod 
+Infix "⊕" := coproduct 
     (at level 41, right associativity) : category_scope.
 
-
-Class epic {C : Category} (a b : C): Type := 
+Class Epic {C : Category} (a b : C): Type := 
 {
     epic_morph : C a b;
     epic_spec : forall (c : C) (f1 f2 : C b c),
         f1 ∘ epic_morph = f2 ∘ epic_morph -> f1 = f2
 }.
 
-Class monic {C : Category} (a b : C): Type := 
+Class Monic {C : Category} (a b : C): Type := 
 {
     monic_morph : C a b;
     monic_spec : forall (c : C) (f1 f2 : C c a),
         monic_morph ∘ f1 = monic_morph ∘ f2 -> f1 = f2
 }.
 
-Coercion monic_morph : monic >-> hom.
+Coercion monic_morph : Monic >-> hom.
 
-Class crelation {C : Category} {H : @Cartesian C} (a b c : C) : Type := 
+Class CRelation {C : Category} {H : @Cartesian C} (a b c : C) : Type := 
 {
-    (* crelation_obj : C; *)
-    crelation_morph : monic c (a ⊗ b)
+    crelation_morph : Monic c (a ⊗ b)
 }.
-
-(* Relation *)
-(* monic relation_obj -> X, Y*)

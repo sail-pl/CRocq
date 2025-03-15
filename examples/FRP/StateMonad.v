@@ -28,7 +28,7 @@ Definition fmap_St {A B : Type} (f : Typ A B) : St A -> St B  :=
     fun st => fun m => 
         (fmap _ ∘ (fmap (FunctorProductLeft Memory))) f (st m).
 
-Lemma functor_prop1 : forall A : Type, fmap_St (idty A) = idty (St A).
+Lemma functor_prop1 : forall A : Type, fmap_St (id A) = id (St A).
 Proof.
   intro A.
   unfold fmap_St.

@@ -7,7 +7,7 @@ From Categories.Embedding Require Import CategoryType Arrow.
 #[refine] Instance ArrowType : Arrow :=
 {
     Ar := fun A B => A -> B;
-    arr {A B : Type} := idty (A -> B);
+    arr {A B : Type} := id (A -> B);
     arrcomp {A B C : Type} := 
         fun x y => compose y x;
     first {A B C : Type} := 

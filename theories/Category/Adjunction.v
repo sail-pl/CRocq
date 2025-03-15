@@ -11,6 +11,6 @@ From Categories.Category Require Import CategoryCat.
   *)
 
 Definition Adjunction {C D : Cat} (F : Cat C D) (G : Cat D C) 
-  (η : NaturalTransformation (idty C) (G ∘ F)) : Type := 
+  (η : NaturalTransformation (id C) (G ∘ F)) : Type := 
     forall (x : C) (y : D) (f : C x (G y)),
     exists! (g : D (F x) y), f = (fmap G g) ∘ (η x).

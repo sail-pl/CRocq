@@ -1,5 +1,0 @@
-(coq.theory
- (name Examples.FRP)
- (package categories)
- (theories Categories.Category Categories.Algebra Categories.Embedding)
- (coqdoc_flags :standard --utf8 --gallina))
