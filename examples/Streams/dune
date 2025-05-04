@@ -1,5 +1,5 @@
 (coq.theory
  (name Examples.Streams)
- (package categories)
- (theories Categories.Category Categories.Algebra Categories.Embedding)
+ (package CRocq)
+ (theories Stdlib CRocq.Category CRocq.Algebra CRocq.Embedding)
  (coqdoc_flags :standard --utf8 --gallina))

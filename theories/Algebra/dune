@@ -1,5 +1,5 @@
 (coq.theory
- (name Categories.Algebra)
- (package categories)
- (theories Categories.Category)
+ (name CRocq.Algebra)
+ (package CRocq)
+ (theories Stdlib CRocq.Category)
  (coqdoc_flags :standard --utf8 --gallina))

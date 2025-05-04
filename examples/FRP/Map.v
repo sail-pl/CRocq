@@ -1,5 +1,5 @@
-From Coq Require Import PeanoNat.
-From Coq Require Import FunctionalExtensionality.
+From Stdlib Require Import PeanoNat.
+From Stdlib Require Import FunctionalExtensionality.
 
 Declare Scope total_map_scope.
 Delimit Scope total_map_scope with tm.

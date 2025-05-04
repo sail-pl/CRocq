@@ -1,4 +1,4 @@
-From Categories.Category Require Import Category Functor.
+From CRocq.Category Require Import Category Functor.
 
 (* Unset Automatic Proposition Inductives. *)
 

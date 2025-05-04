@@ -1,5 +1,5 @@
-Require Import Categories.Category.Category.
-Require Import Categories.Embedding.CategoryType.
+Require Import CRocq.Category.Category.
+Require Import CRocq.Embedding.CategoryType.
 
 Reserved Infix ">>>" (at level 42, left associativity).
 

@@ -1,16 +1,16 @@
 
-Require Import Categories.Category.Category.
-Require Import Categories.Category.Functor.
-Require Import Categories.Embedding.CategoryType.
-Require Import Categories.Embedding.Monad.
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq.Arith Require Import PeanoNat.
+Require Import CRocq.Category.Category.
+Require Import CRocq.Category.Functor.
+Require Import CRocq.Embedding.CategoryType.
+Require Import CRocq.Embedding.Monad.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib.Arith Require Import PeanoNat.
 
 Open Scope type_scope.
 
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
+Require Import Stdlib.Arith.PeanoNat.
+Require Import Stdlib.Lists.List.
+Require Import Stdlib.Bool.Bool.
 Axiom ltb : nat -> nat -> bool.
 
 Notation  "t1 '>>=' t2" := (bind t1 t2) (at level 42, left associativity).

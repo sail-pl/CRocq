@@ -1,4 +1,4 @@
-From Coq.Logic Require Import FunctionalExtensionality ProofIrrelevance.
+From Stdlib.Logic Require Import FunctionalExtensionality ProofIrrelevance.
 
 Lemma UIP_refl : 
   forall (a : Set) (x0 : a = a), (@eq (@eq Set a a) x0 (@eq_refl Set a)).

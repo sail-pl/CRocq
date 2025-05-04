@@ -1,11 +1,11 @@
-Require Import Coq.Logic.FunctionalExtensionality.
-From Coq.Setoids Require Import Setoid.
-From Coq Require Import ProofIrrelevance.
-Require Import Categories.Category.Category.
-Require Import Categories.Category.Functor.
-Require Import Categories.Embedding.CategoryType.
-Require Import Categories.Category.CategoryCat.
-Require Import Categories.Embedding.Arrow.  
+Require Import Stdlib.Logic.FunctionalExtensionality.
+From Stdlib.Setoids Require Import Setoid.
+From Stdlib Require Import ProofIrrelevance.
+Require Import CRocq.Category.Category.
+Require Import CRocq.Category.Functor.
+Require Import CRocq.Embedding.CategoryType.
+Require Import CRocq.Category.CategoryCat.
+Require Import CRocq.Embedding.Arrow.  
 
 (*****************************************************************************)
 (** * Prelude *)

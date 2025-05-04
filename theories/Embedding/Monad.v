@@ -1,7 +1,7 @@
-From Coq.Logic Require Import FunctionalExtensionality.
-Require Import Categories.Category.Category.
-Require Import Categories.Category.Functor.
-Require Import Categories.Embedding.CategoryType.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+Require Import CRocq.Category.Category.
+Require Import CRocq.Category.Functor.
+Require Import CRocq.Embedding.CategoryType.
 Reserved Infix ">>=" (at level 42, left associativity).
 
 (* only for categories with functions as arrows *)

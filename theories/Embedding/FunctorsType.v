@@ -1,7 +1,7 @@
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq.Lists Require Import List.
-From Categories.Category Require Import Category Functor.
-From Categories.Embedding Require Import CategoryType.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib.Lists Require Import List.
+From CRocq.Category Require Import Category Functor.
+From CRocq.Embedding Require Import CategoryType.
 
 
 #[refine] Instance FunctorConstant (A : Type) : Functor Typ Typ :=

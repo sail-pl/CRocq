@@ -1,8 +1,8 @@
 
-From Coq.Logic Require Import ProofIrrelevance.
+From Stdlib.Logic Require Import ProofIrrelevance.
 
-From Categories.Category Require Import Category Functor Transformation.
-From Categories.Category Require Import CategoryCat.
+From CRocq.Category Require Import Category Functor Transformation.
+From CRocq.Category Require Import CategoryCat.
 
 (** ** Adjonctions *)
 (** An adjunction between two categories [C] and [D] is a pair 

@@ -1,5 +1,5 @@
 (coq.theory
- (name Categories.Embedding)
- (package categories)
- (theories Categories.Category Categories.Algebra)
+ (name CRocq.Embedding)
+ (package CRocq)
+ (theories CRocq.Category CRocq.Algebra)
  (coqdoc_flags :standard --utf8 --gallina))

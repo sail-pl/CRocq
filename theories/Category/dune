@@ -1,5 +1,6 @@
 (coq.theory
- (name Categories.Category)
- (package categories)
+ (name CRocq.Category)
+ (package CRocq)
+ (theories Stdlib)
  (coqdoc_flags :standard --utf8 --gallina))
  

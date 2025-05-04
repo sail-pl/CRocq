@@ -1,10 +1,10 @@
-From Coq.Logic Require Import FunctionalExtensionality ProofIrrelevance.
-From Coq.Setoids Require Import Setoid.
-From Categories.Category Require Import Category Functor CategoryCat.
-From Categories.Algebra Require Import Coalgebra CatCoalgebra.
-From Categories.Embedding Require Import Arrow.
-From Categories.Embedding Require Import CategoryType.
-From Categories.Embedding Require Import ArrowType.
+From Stdlib.Logic Require Import FunctionalExtensionality ProofIrrelevance.
+From Stdlib.Setoids Require Import Setoid.
+From CRocq.Category Require Import Category Functor CategoryCat.
+From CRocq.Algebra Require Import Coalgebra CatCoalgebra.
+From CRocq.Embedding Require Import Arrow.
+From CRocq.Embedding Require Import CategoryType.
+From CRocq.Embedding Require Import ArrowType.
 
 
 CoInductive corec (A B : Type) := 

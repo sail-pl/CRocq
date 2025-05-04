@@ -1,8 +1,8 @@
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq.Setoids Require Import Setoid.
-From Categories.Category Require Import Category Functor.
-From Categories.Embedding Require Import CategoryType.
-From Categories.Algebra Require Import Coalgebra.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib.Setoids Require Import Setoid.
+From CRocq.Category Require Import Category Functor.
+From CRocq.Embedding Require Import CategoryType.
+From CRocq.Algebra Require Import Coalgebra.
 
 Section ProcessFunctor.
 

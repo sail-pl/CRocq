@@ -1,6 +1,6 @@
-From Coq.Logic Require Import ProofIrrelevance.
+From Stdlib.Logic Require Import ProofIrrelevance.
 
-From Categories.Category Require Import Category Functor.
+From CRocq.Category Require Import Category Functor.
 
 (** ** Natural transformations *)
 (** A natural transformation between two functors [F G : Functor C D] for two

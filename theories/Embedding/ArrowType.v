@@ -1,8 +1,8 @@
-From Coq.Logic Require Import FunctionalExtensionality ProofIrrelevance.
-From Coq.Setoids Require Import Setoid.
-From Categories.Category Require Import Category Functor CategoryCat.
-From Categories.Algebra Require Import Coalgebra.
-From Categories.Embedding Require Import CategoryType Arrow.
+From Stdlib.Logic Require Import FunctionalExtensionality ProofIrrelevance.
+From Stdlib.Setoids Require Import Setoid.
+From CRocq.Category Require Import Category Functor CategoryCat.
+From CRocq.Algebra Require Import Coalgebra.
+From CRocq.Embedding Require Import CategoryType Arrow.
 
 #[refine] Instance ArrowType : Arrow :=
 {

@@ -1,6 +1,6 @@
 
-From Coq.Logic Require Import FunctionalExtensionality.
-From Categories.Category Require Import Category Functor.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From CRocq.Category Require Import Category Functor.
 
 Open Scope type_scope.
 

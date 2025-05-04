@@ -1,11 +1,11 @@
-Require Import Categories.Category.Category.
-Require Import Categories.Category.Functor.
-Require Import Categories.Embedding.CategoryType.
-Require Import Categories.Embedding.Monad.
+Require Import CRocq.Category.Category.
+Require Import CRocq.Category.Functor.
+Require Import CRocq.Embedding.CategoryType.
+Require Import CRocq.Embedding.Monad.
 Require Import Map Util.
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq Require Import PeanoNat.
-From Coq Require Import ProofIrrelevance.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib Require Import PeanoNat.
+From Stdlib Require Import ProofIrrelevance.
 
 (** * Memory modelisation *)
 

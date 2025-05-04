@@ -1,6 +1,6 @@
-From Categories.Category Require Import Category Functor.
+From CRocq.Category Require Import Category Functor.
 
-Unset Automatic Proposition Inductives.
+(* Unset Automatic Proposition Inductives. *)
 
 Class Algebra {C : Category} (F : Functor C C) : Type :=
 {

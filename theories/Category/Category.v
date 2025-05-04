@@ -1,4 +1,4 @@
-From Coq.Logic Require Import FunctionalExtensionality.
+From Stdlib.Logic Require Import FunctionalExtensionality.
 
 Set Universe Polymorphism.
 

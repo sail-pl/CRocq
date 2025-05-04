@@ -1,14 +1,14 @@
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq.Logic Require Import ProofIrrelevance.
-From Coq.Setoids Require Import Setoid.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib.Logic Require Import ProofIrrelevance.
+From Stdlib.Setoids Require Import Setoid.
 
-From Categories.Category Require Import Category Functor.
-From Categories.Algebra Require Coalgebra.
-From Categories.Algebra Require Import CatCoalgebra.
+From CRocq.Category Require Import Category Functor.
+From CRocq.Algebra Require Coalgebra.
+From CRocq.Algebra Require Import CatCoalgebra.
 
 Import -(coercions) Coalgebra.
 
-From Categories.Embedding Require Import CategoryType.
+From CRocq.Embedding Require Import CategoryType.
 
 Declare Scope stream_scope.
 

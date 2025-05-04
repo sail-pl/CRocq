@@ -1,7 +1,7 @@
-From Coq.Logic Require Import FunctionalExtensionality.
-From Coq.Logic Require Import ProofIrrelevance.
-From Categories.Category Require Import Category Functor.
-From Categories.Algebra Require Import Algebra.
+From Stdlib.Logic Require Import FunctionalExtensionality.
+From Stdlib.Logic Require Import ProofIrrelevance.
+From CRocq.Category Require Import Category Functor.
+From CRocq.Algebra Require Import Algebra.
 
 (* morphisms are simply morphism of the category *)
 

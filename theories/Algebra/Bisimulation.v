@@ -1,5 +1,5 @@
-From Categories.Category Require Import Category Functor.
-From Categories.Algebra Require Import Coalgebra CatCoalgebra.
+From CRocq.Category Require Import Category Functor.
+From CRocq.Algebra Require Import Coalgebra CatCoalgebra.
 
 (* R is also a relation *)
 

@@ -8,7 +8,7 @@
  "Frédéric Dabrowski <frederic.dabrowski@univ-orleans.fr>")
 (source (github DabrowskiFr/CategoryTheoryCoq))
 (package 
- (name categories)
+ (name CRocq)
  (synopsis "Category Theory")
  (description "A Coq library for category theory")
  (depends (coq (>= 8.20.0))))
