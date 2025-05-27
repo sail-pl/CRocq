@@ -1,6 +1,6 @@
 From Stdlib.Logic Require Import ProofIrrelevance.
 
-From CRocq.Category Require Import Category Functor.
+From CRocq.Category Require Import Category Functor CategoryCat.
 
 (** ** Natural transformations *)
 (** A natural transformation between two functors [F G : Functor C D] for two
@@ -39,6 +39,30 @@ Proof.
     rewrite <- compose_assoc.
     reflexivity.
 Defined.
+
+(*
+Set Printing All.
+Set Typeclasses Debug. 
+
+Definition nf_compose_hor {C D E : Category} {F G : Functor C D} {F' G' : Functor D E}
+    (N : NaturalTransformation F' G') (M : NaturalTransformation F G) :
+        NaturalTransformation (FunctorComp C D E F' F) (FunctorComp C D E G' G).
+    refine {|
+        transform := fun (c : C) => (@fmap D E G' (fobj c) (fobj c) (@transform C D F G M c)) 
+        ∘ (@transform D E F' G' N (@fobj C D F c));
+        transform_spec := _ ;
+    |}.
+*)
+
+Definition nf_compose_hor {C D E : Category} {F G : Functor C D} {F' G' : Functor D E}
+    (N : NaturalTransformation F' G') (M : NaturalTransformation F G) :
+        NaturalTransformation (FunctorComp C D E F' F) (FunctorComp C D E G' G).
+    refine {|
+        transform := fun (c : C) => (fmap G' (M c)) 
+        ∘ (N (F c));
+        transform_spec := _ ;
+    |}.
+
 
 Lemma a : forall (C D : Category) (F G : Functor C D) (f : NaturalTransformation F G), 
     nf_compose F F G f (nf_idty F) = f.

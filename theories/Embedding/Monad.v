@@ -2,6 +2,7 @@ From Stdlib.Logic Require Import FunctionalExtensionality.
 Require Import CRocq.Category.Category.
 Require Import CRocq.Category.Functor.
 Require Import CRocq.Embedding.CategoryType.
+Require Import CRocq.Category.FormalMonad.
 Reserved Infix ">>=" (at level 42, left associativity).
 
 (* only for categories with functions as arrows *)
@@ -45,3 +46,36 @@ Proof.
       intro x.
       apply monad_prop3.
 Defined.    
+
+
+#[refine] Instance ParticularMonad (m : Monad) : FormalMonadHom Typ := {
+  T := m.(M);
+  eta := fun A => m.(ret) (a := A);
+  mu := fun A => fun (f : (m.(M) (m.(M) A)) ) => m.(bind) f (fun x => x);
+}.
+(*
+Proof.
+  - intros.
+    apply functional_extensionality.
+    simpl.
+    apply m.(monad_prop1).
+  - intros. 
+    apply functional_extensionality.
+    intro.
+    simpl.
+    
+    
+    admit.
+    
+  - intros. 
+    apply functional_extensionality.
+    intro.
+    simpl.
+    rewrite bind_respects_fmap.
+    
+    rewrite <- m.(monad_prop3).
+    admit.
+*)
+    
+    
+    
