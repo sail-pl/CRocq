@@ -3,64 +3,85 @@ From CRocq.Category Require Import CategoryCat.
 
 (* formal definition of monad in Category theory with morphisms as naturals transitions *)
 Class FormalMonadHom (C : Category) := {
-  T : Functor C C; 
-  eta : forall (a : C), hom a (T a);
-  mu  : forall (a : C), hom (T (T a)) (T a);
+  U : Functor C C; 
+  etaU : forall (a : C), hom a (U a);
+  muU  : forall (a : C), hom (U (U a)) (U a);
 
-  eta_right_unicity : forall (a : C),
-    mu a ∘ eta (T a) = idty (T a);
+  etaU_right_unicity : forall (a : C),
+    muU a ∘ etaU (U a) = idty (U a);
 
-  eta_left_unicity : forall (a : C),
-    mu a ∘ (fmap T (eta a)) = idty (T a);
+  etaU_left_unicity : forall (a : C),
+    muU a ∘ (fmap U (etaU a)) = idty (U a);
 
-  mu_associativity : forall (a : C),
-    mu a ∘ (fmap T (mu a)) = mu a ∘ mu (T a);
+  muU_associativity : forall (a : C),
+    muU a ∘ (fmap U (muU a)) = muU a ∘ muU (U a);
 }.
 
-(*
-Definition whiskering_left {C D E : Category} {F G : Functor D E}
-  (N : NaturalTransformation F G) (H : Functor C D) :
-    NaturalTransformation (FunctorComp _ _ _ F H) (FunctorComp _ _ _ G H).
-  refine {|
-    transform := (*fun a => N (H a)*) _;
-    transform_spec := _ ;
-  |}.
-Proof.
-Admitted.
+Section ComposeIdentities.
+  Context {C D : Category}.
+  Context (F : Functor C D).
 
-Definition whiskering_right {C D E : Category} {F G : Functor C D}
-  (N : NaturalTransformation F G) (H : Functor D E) : 
-    NaturalTransformation (FunctorComp _ _ _ H F) (FunctorComp _ _ _ H G).
-  refine {|
-    transform := fun a => (*fmap H (N a)*)_; 
-    transform_spec := _ ;
+  Program Definition Nf_F_id_left : NaturalTransformation F (@compose Cat C D D (FunctorId D) F) := 
+  {|
+      transform := fun c => idty (F c);
   |}.
-Proof.
-Admitted.
-*)
+  Next Obligation.
+    intros. simpl.
+    rewrite compose_left_idty.
+    rewrite compose_right_idty.
+    reflexivity.
+  Qed.
+
+  Program Definition Nf_F_id_right : NaturalTransformation F (@compose Cat C C D F (FunctorId C)):=
+  {|
+      transform := fun c => idty (F c);
+  |}.
+  Next Obligation.
+    intros. simpl.
+    rewrite compose_left_idty.
+    rewrite compose_right_idty.
+    reflexivity.
+  Qed.
+
+End ComposeIdentities.
+
+Section test1.
+
+  Context (C D E B : Category).
+  Context (F : Functor C D).
+  Context (G : Functor D E).
+  Context (H : Functor E B).
+
+Program Definition F_compose_assoc : NaturalTransformation (@compose Cat C D B (@compose Cat D E B H G) F) 
+  (@compose Cat C E B H (@compose Cat C D E G F)) :=
+  {|
+    transform := fun c => idty ((@compose Cat C D B (@compose Cat D E B H G) F) c);
+  |}.
+  Next Obligation.
+  intros. simpl.
+  rewrite compose_right_idty.
+  rewrite compose_left_idty.
+  reflexivity.
+Qed.
+
+End test1.
 
 (*formal definition of monad *)
 Class FormalMonad (C : Category) := {
-  U : Functor C C;
-  etaU : NaturalTransformation (FunctorId C) U;  
-  muU : NaturalTransformation (FunctorComp C C C U U) U;
+  T : Functor C C;
+  eta : NaturalTransformation (FunctorId C) T;  
+  mu : NaturalTransformation (@compose Cat C C C T T) T;
 
-  (*a : (NaturalTransformation U (FunctorComp _ _ _ U U));
-  test : 
-    a ∘v (muU) = nf_idty (FunctorComp _ _ _ U U) ;
-  *)
+  eta_left_unicity :
+    nf_compose _ _ _ (nf_compose _ _ _ mu (nf_compose_hor (nf_idty T) eta)) (@Nf_F_id_left C C T)
+      = nf_idty T;
 
-  eta_left_unicity_U :
-    nf_compose _ _ _ muU (nf_compose_hor _ _ _ (nf_idty U) etaU)  
-      = nf_idty U;
+  eta_right_unicity :
+    nf_compose _ _ _ (nf_compose _ _ _ mu (nf_compose_hor eta (nf_idty T))) (@Nf_F_id_right C C T) 
+      = nf_idty T;
 
-  eta_right_unicity_U :
-    nf_compose _ _ _ muU (nf_compose_hor _ _ _ etaU (nf_idty U))  
-      = nf_idty U;
-
-  muU_assoc : 
-    nf_compose _ _ _ muU (nf_compose_hor _ _ _ muU (nf_idty U)) 
-    = nf_compose _ _ _ muU (nf_compose_hor _ _ _ (nf_idty U) muU);
-
+  mu_associativity : 
+    nf_compose _ _ _ mu (nf_compose_hor (nf_idty T) mu) 
+    = nf_compose _ _ _ (nf_compose _ _ _ mu (nf_compose_hor mu (nf_idty T))) (@F_compose_assoc C C C C T T T) ;
 }.
 

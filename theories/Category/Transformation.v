@@ -40,30 +40,55 @@ Proof.
     reflexivity.
 Defined.
 
-(*
-Set Printing All.
-Set Typeclasses Debug. 
-
-Definition nf_compose_hor {C D E : Category} {F G : Functor C D} {F' G' : Functor D E}
-    (N : NaturalTransformation F' G') (M : NaturalTransformation F G) :
-        NaturalTransformation (FunctorComp C D E F' F) (FunctorComp C D E G' G).
+Section NFComposHorizontal.
+ 
+    Context {C D E : Category}.
+    Context {F G : Functor C D}.
+    Context (T : NaturalTransformation F G).
+    Context {F' G' : Functor D E}.
+    Context (T' : NaturalTransformation F' G').
+ 
+    (* The horitontal composition T' * T of type
+            forall c : C, E (F' (F c)) (G' (G c))
+        is equivalently defined by mapping c to
+        - (T' (G c)) ∘ (fmap F' (T c))
+        - fmap G' (T c) ∘ T' (F c)
+    First,  we check that the two definitions are equivalent (equiv_def)
+    Second, we define the composition using the first one
+    *)
+     
+    Lemma equiv_def : forall c : C,
+        (T' (G c)) ∘ (fmap F' (T c)) = fmap G' (T c) ∘ T' (F c).
+    Proof.
+        intros c.
+        destruct T, T'; simpl.
+        now rewrite transform_spec1.
+    Qed.
+ 
+    Definition nf_compose_hor : NaturalTransformation (@compose Cat C D E F' F) (@compose Cat C D E G' G).
     refine {|
-        transform := fun (c : C) => (@fmap D E G' (fobj c) (fobj c) (@transform C D F G M c)) 
-        ∘ (@transform D E F' G' N (@fobj C D F c));
-        transform_spec := _ ;
+        transform :=
+            fun c : C =>
+                (T' (G c)) ∘ (fmap F' (T c)) :
+                    E   ((@compose Cat C D E F' F) c)
+                        ((@compose Cat C D E G' G) c);
+        transform_spec := _
     |}.
-*)
-
-Definition nf_compose_hor {C D E : Category} {F G : Functor C D} {F' G' : Functor D E}
-    (N : NaturalTransformation F' G') (M : NaturalTransformation F G) :
-        NaturalTransformation (FunctorComp C D E F' F) (FunctorComp C D E G' G).
-    refine {|
-        transform := fun (c : C) => (fmap G' (M c)) 
-        ∘ (N (F c));
-        transform_spec := _ ;
-    |}.
-
-
+    Proof.
+        intros a b f.
+        destruct T, T'; simpl.
+        rewrite <- compose_assoc.
+        rewrite functors_preserve_composition.
+        rewrite <- transform_spec0.
+        rewrite compose_assoc.
+        rewrite transform_spec1.
+        rewrite <- compose_assoc.
+        rewrite <- functors_preserve_composition.
+        reflexivity.
+    Defined.
+ 
+End NFComposHorizontal.
+ 
 Lemma a : forall (C D : Category) (F G : Functor C D) (f : NaturalTransformation F G), 
     nf_compose F F G f (nf_idty F) = f.
 Proof.
