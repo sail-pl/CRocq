@@ -1,7 +1,10 @@
 From Stdlib.Logic Require Import FunctionalExtensionality.
 Require Import CRocq.Category.Category.
 Require Import CRocq.Category.Functor.
+Require Import CRocq.Category.Transformation.
+Require Import CRocq.Category.CategoryCat.
 Require Import CRocq.Embedding.CategoryType.
+Require Import CRocq.Category.FormalMonad.
 Reserved Infix ">>=" (at level 42, left associativity).
 
 (* only for categories with functions as arrows *)
@@ -47,6 +50,96 @@ Proof.
 Defined.    
 
 
+(* Proof that the 'haskell' monads definition is a particular case of 
+the categorical definition (FormalMonad).
+*)
+Section MonadInNaturalTransformation.
+  Context(m : Monad).
+  Context(C : Category).
+
+  Definition join {a : Typ} (mma : m (m a)) : m a :=
+  bind mma (fun x => x).
+
+  Lemma fmap_ret_compat : 
+    forall {a b : Typ} (f : a -> b) (x : a),
+     fmap m f (ret x) = ret (f x).
+  Proof.
+    intros.
+  Admitted.
+
+  Lemma fmap_join_compat : 
+    forall {a b : Typ} (f : a -> b) (x : m (m a)),
+      fmap m f (join x) = join (fmap m (fmap m f) x).
+    Proof.
+    intros.  
+  Admitted.
     
+
+Program Definition eta_m : NaturalTransformation (FunctorId Typ) m.(M) :=
+  {|
+    transform := fun x => m.(ret);
+  |}.
+Next Obligation.
+  intros. simpl.
+  apply functional_extensionality. intro.
+  rewrite fmap_ret_compat.
+  reflexivity.
+Qed.
+
+Program Definition mu_m : NaturalTransformation (@compose Cat _ _ _ m.(M) m.(M)) m.(M) :=
+  {|
+    transform := fun x => join;
+  |}.
+Next Obligation.
+  intros. simpl.
+  apply functional_extensionality.
+  intro.
+  rewrite fmap_join_compat.
+  reflexivity.
+Qed.
+
+Lemma fid_m_eq_m:
+  (@compose Cat _ _ _ (FunctorId Typ) m) = m.
+Proof.
+  rewrite (@compose_right_idty Cat).
+  reflexivity.
+Qed.
+
+Lemma m_fid_eq_m:
+  (@compose Cat _ _ _ m (FunctorId Typ)) = m.
+Proof.
+  rewrite (@compose_left_idty Cat).
+  reflexivity.
+Qed.
+
+
+
+#[refine] Instance ParticularMonad : FormalMonad Typ := 
+{
+  T := m.(M);
+  eta := eta_m; 
+  mu := mu_m;
+}.
+Proof. 
+  - simpl.
+    (*admit.*)
+    unfold nf_compose_hor.
+    rewrite fid_m_eq_m.
+    rewrite eta_left_unicity.
     
-    
+  - admit.
+  - admit.
+Admitted.
+
+   
+  
+  
+End MonadInNaturalTransformation.
+
+
+
+
+(*
+point s
+
+*)

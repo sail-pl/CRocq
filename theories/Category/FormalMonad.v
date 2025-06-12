@@ -73,7 +73,7 @@ Class FormalMonad (C : Category) := {
   mu : NaturalTransformation (@compose Cat C C C T T) T;
 
   eta_left_unicity :
-    nf_compose _ _ _ (nf_compose _ _ _ mu (nf_compose_hor (nf_idty T) eta)) (@Nf_F_id_left C C T)
+    nf_compose _ _ _ (nf_compose _ _ _ mu (@nf_compose_hor _ _ _ _ _  (nf_idty T) _ _ eta)) (@Nf_F_id_left C C T)
       = nf_idty T;
 
   eta_right_unicity :
