@@ -56,10 +56,18 @@ the categorical definition (FormalMonad).
 Section MonadInNaturalTransformation.
   Context(m : Monad).
   Context(C : Category).
+  Context(fm : FormalMonad Typ).
 
+ (* join, an other rule for the fonctionnals monads *)
   Definition join {a : Typ} (mma : m (m a)) : m a :=
   bind mma (fun x => x).
 
+  (* trivial laws 
+  fmap m f (ret x) 
+    = fmap g b (with g : b -> mb)
+    = mb
+  ret (f x) = ret b = mb 
+  *)
   Lemma fmap_ret_compat : 
     forall {a b : Typ} (f : a -> b) (x : a),
      fmap m f (ret x) = ret (f x).
@@ -67,6 +75,7 @@ Section MonadInNaturalTransformation.
     intros.
   Admitted.
 
+  (* trivial too but need to be defined in Monad *)
   Lemma fmap_join_compat : 
     forall {a b : Typ} (f : a -> b) (x : m (m a)),
       fmap m f (join x) = join (fmap m (fmap m f) x).
@@ -74,7 +83,7 @@ Section MonadInNaturalTransformation.
     intros.  
   Admitted.
     
-
+(*Link between ret and eta, a NT using ret *)
 Program Definition eta_m : NaturalTransformation (FunctorId Typ) m.(M) :=
   {|
     transform := fun x => m.(ret);
@@ -86,6 +95,7 @@ Next Obligation.
   reflexivity.
 Qed.
 
+(* link between join and mu, a NT using join*)
 Program Definition mu_m : NaturalTransformation (@compose Cat _ _ _ m.(M) m.(M)) m.(M) :=
   {|
     transform := fun x => join;
@@ -98,22 +108,6 @@ Next Obligation.
   reflexivity.
 Qed.
 
-Lemma fid_m_eq_m:
-  (@compose Cat _ _ _ (FunctorId Typ) m) = m.
-Proof.
-  rewrite (@compose_right_idty Cat).
-  reflexivity.
-Qed.
-
-Lemma m_fid_eq_m:
-  (@compose Cat _ _ _ m (FunctorId Typ)) = m.
-Proof.
-  rewrite (@compose_left_idty Cat).
-  reflexivity.
-Qed.
-
-
-
 #[refine] Instance ParticularMonad : FormalMonad Typ := 
 {
   T := m.(M);
@@ -121,7 +115,9 @@ Qed.
   mu := mu_m;
 }.
 Proof. 
-  - simpl.
+  -  
+  rewrite (@eta_left_unicity Typ fm) . 
+
     (*admit.*)
     unfold nf_compose_hor.
     rewrite fid_m_eq_m.
@@ -130,16 +126,5 @@ Proof.
   - admit.
   - admit.
 Admitted.
-
-   
-  
   
 End MonadInNaturalTransformation.
-
-
-
-
-(*
-point s
-
-*)
