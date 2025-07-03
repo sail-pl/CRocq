@@ -25,3 +25,16 @@ Class Functor (C : Category) (D : Category) : Type := {
 #[global] Arguments fmap { _ _ } Functor { _ _ }.
 
 Coercion fobj : Functor >-> Funclass.
+
+
+Definition ConstantFunctor (J C : Category) (c : C) : Functor J C.
+refine {|
+  fobj := fun _ => c;
+  fmap := fun _ _ _  => idty c;
+|}.
+Proof.
+  - intro. reflexivity.
+  - intros. 
+    rewrite compose_left_idty.
+    reflexivity.
+Qed.

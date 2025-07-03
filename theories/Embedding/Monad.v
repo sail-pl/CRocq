@@ -50,7 +50,7 @@ Proof.
 Defined.    
 
 
-(* Proof that the 'haskell' monads definition is a particular case of 
+(* Proof that the fonctionnal monads definition is a particular case of 
 the categorical definition (FormalMonad).
 *)
 Section MonadInNaturalTransformation.
@@ -115,13 +115,7 @@ Qed.
   mu := mu_m;
 }.
 Proof. 
-  -  
-  rewrite (@eta_left_unicity Typ fm) . 
-
-    (*admit.*)
-    unfold nf_compose_hor.
-    rewrite fid_m_eq_m.
-    rewrite eta_left_unicity.
+  -  admit.
     
   - admit.
   - admit.
