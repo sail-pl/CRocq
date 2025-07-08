@@ -19,5 +19,20 @@ Class Limit {J C : Category} (D : Functor J C) : Type:= {
         (forall j (R : C limit_apex ((ConstantFunctor J C limit_apex) j)), 
             (limit_cone j) ∘ R ∘ f = (limit_cone j) ∘ R ∘ g ) -> f = g;
 }.
-
+    
 (* Need a definition for R and Q or something else to reduce (ConstantFunctor J C limit_apex) j *)
+
+Class CoLimit {J C : Category} (D : Functor J C) : Type := {
+    colimit_apex : C;
+    colimit_cone : CoCone D colimit_apex;
+
+
+    cofactorization : forall (x : C) (X : CoCone D x),
+        { f : C colimit_apex x |
+            forall j (R : C ((ConstantFunctor J C colimit_apex) j) colimit_apex)
+            (Q : C ((ConstantFunctor J C x) j) x), Q ∘ (X j) = f ∘ R ∘ (colimit_cone j) };
+
+    cofactorize_unique : forall (x : C) (X : CoCone D x) (f g : C colimit_apex x),
+    (forall j (R : C ((ConstantFunctor J C colimit_apex) j) colimit_apex),
+       f ∘ R ∘ (colimit_cone j) = g ∘ R ∘ (colimit_cone j)) -> f = g
+}.  

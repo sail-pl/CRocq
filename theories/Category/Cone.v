@@ -9,5 +9,9 @@ Class Cone {J C : Category} (D : Functor J C) (c : C) : Type := {
 
 Coercion cone_obj : Cone >-> NaturalTransformation.
 
+Class CoCone {J C : Category} (D : Functor J C) (c : C) : Type := {
+    coapex := c;
+    cocone_obj : NaturalTransformation D (ConstantFunctor J C c)
+}.
 
-
+Coercion cocone_obj : CoCone >-> NaturalTransformation.
